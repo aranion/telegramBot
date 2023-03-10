@@ -1,0 +1,9 @@
+/build
+**/*.min.js
+/node_modules 
+/dist
+/.git
+/.vscode
+
+.eslintrc.js
+*.config.js

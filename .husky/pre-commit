@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+yarn prettier
+# yarn stylelint:fix
+yarn eslint:fix && git add .

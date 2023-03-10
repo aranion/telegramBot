@@ -105,6 +105,3 @@ dist
 
 # Parcel
 .parcel-cache
-
-build
-src/config.ts
