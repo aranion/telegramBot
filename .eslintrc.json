@@ -44,7 +44,7 @@
     "space-before-function-paren": 0,
     "max-len": [
       "error",
-      150,
+      110,
       2,
       {
         "ignoreUrls": true

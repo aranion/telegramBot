@@ -10,6 +10,7 @@ export const config = {
     storageBucket: '',
     messagingSenderId: '',
     appId: '',
+    databaseURL: '',
   },
   botToken: '',
   storagePath: `${process.cwd()}/files/`,

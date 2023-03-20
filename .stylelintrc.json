@@ -19,7 +19,7 @@
       }
     ],
     "scss/at-mixin-pattern": "^[a-zA-Z]+$",
-    "max-line-length": 150,
+    "max-line-length": 110,
     "declaration-empty-line-before": null
   },
   "overrides": [
