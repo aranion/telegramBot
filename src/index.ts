@@ -1,173 +1,122 @@
-import { Telegraf, Scenes, Markup } from 'telegraf'
 import type { InlineQueryResult } from 'telegraf/typings/core/types/typegram.js'
-import { config } from './config'
-// import fileQ from './questions/index.json' assert { type: 'json' };
-// import db from './utils/database.js';
+import ANSWER_BOT from './answerBot/index.json' assert { type: 'json' }
+import db from './utils/database.js'
+import { Scenes, Telegraf } from 'telegraf'
+import { config } from './config.js'
+import { actionsInit } from './actions/index.js'
+import { commandsInit } from './commands/index.js'
+import { getListInlineKeyboard } from './utils/getListInlineKeyboard.js'
+import { ListActions } from './actions/enum.js'
 
 const bot = new Telegraf<Scenes.SceneContext>(config.botToken)
 
-const COMMANDS = [
-  { command: '/start', description: 'Запуск бота' },
-  {
-    command: '/info',
-    description: 'Тест функционала',
-  },
-  {
-    command: '/help',
-    description: 'Показать справку',
-  },
-  {
-    command: '/quit',
-    description: 'Выйти из чата',
-  },
-  {
-    command: '/oldschool',
-    description: 'oldschool',
-  },
-  {
-    command: '/hipster',
-    description: 'hipster',
-  },
-  {
-    command: '/game',
-    description: 'Game',
-  },
-]
-
-const chats: Record<string, number> = {}
-
 const init = (): void => {
-  bot.telegram.setMyCommands(COMMANDS)
+  actionsInit(bot)
+  commandsInit(bot)
+  // bot.use(async (ctx, next) => {
+  //   console.time(`Processing update ${ctx.update.update_id}`)
+  //   await next()
+  //   console.timeEnd(`Processing update ${ctx.update.update_id}`)
+  // })
+  // bot.use((ctx, next) => {
+  //   // Дополнительная переменная
+  //   ctx.myProp = ctx.chat?.first_name?.toUpperCase();
+  //   return next();
+  // });
 
-  bot.start(ctx => ctx.reply('Welcome'))
-  bot.help(ctx => ctx.reply('Send me a sticker'))
-  bot.command('oldschool', ctx => ctx.reply('Hello'))
-  bot.command('hipster', Telegraf.reply('λ'))
-
-  bot.action('like', ctx => {
-    return ctx.answerCbQuery('like!')
-  })
-
-  bot.action('dislike', ctx => {
-    return ctx.answerCbQuery('dislike!')
-  })
-
-  bot.action(/.+/, ctx => {
-    return ctx.answerCbQuery(`Ой, ${ctx.match[0]}! нет такого`)
-  })
-
-  bot.use(async (ctx, next) => {
-    // МИДЛЕВАРА
-    console.time(`Processing update ${ctx.update.update_id}`)
-    await next()
-    console.timeEnd(`Processing update ${ctx.update.update_id}`)
-  })
+  // Приветствие для психолога
+  bot.telegram
+    .sendMessage(
+      854241396,
+      `Привет! Я снова онлайн! :)
+       Вот тут написано что я могу`,
+      getListInlineKeyboard(ListActions.GET_ALL_MESSAGES_PSYCHOLOGY),
+    )
+    .then(res => {
+      console.log('Бот онлайн', res)
+    })
 
   bot.on('callback_query', async ctx => {
-    console.log('callback_query')
     await ctx.telegram.answerCbQuery(ctx.callbackQuery.id)
-    await ctx.answerCbQuery()
+    return ctx.answerCbQuery()
   })
 
   bot.on('inline_query', async ctx => {
-    console.log('inline_query')
     const result: InlineQueryResult[] = []
     await ctx.telegram.answerInlineQuery(ctx.inlineQuery.id, result)
-    await ctx.answerInlineQuery(result)
+    return ctx.answerInlineQuery(result)
   })
 
   bot.on('text', async ctx => {
-    const { update, chat } = ctx
-    const { message } = update
-    const { text } = message
-    console.log('ctx', message.text)
+    try {
+      const { chat } = ctx
+      const idTimeoutNextMessagePsychology = await db.getIdNextMessagePsychology(chat.id)
+      const newMessage = ctx.update.message
 
-    await ctx.reply('Ищу ответ...')
+      // Записать все сообщения в БД чата пользователя
+      await db.setMessage(newMessage)
 
-    if (text.toLocaleLowerCase() === 'нина') {
-      await ctx.replyWithSticker({
-        url: 'https://chpic.su/_data/stickers/b/Belkosemja/Belkosemja_011.webp',
-      })
-      return ctx.reply('Пошли спать!')
-    }
-    if (text === '/start') {
-      await ctx.replyWithSticker({
-        url: 'https://chpic.su/_data/stickers/b/Belkosemja/Belkosemja_011.webp',
-      })
-      return ctx.reply(
-        `Привет! Меня зовут Марвин. Я – интеллектуальная система, которая постарается 
-        помочь тебе решить твои проблемы. Ты можешь рассказать мне о своей проблеме, 
-        пообщаться со мной или послушать мой совет.`,
-      )
-    }
+      // Очистить id таймаута и отправить уведомление психологу о новом сообщении
+      if (idTimeoutNextMessagePsychology) {
+        const idPsychology = await db.getIdPsychologist()
+        const { message } = ctx
+        const { text, message_id } = message
+        const newUserMessage = `id: ${message_id}, сообщение: "${text}"`
 
-    if (text === '/info') {
-      return ctx.reply('Тебя зовут: ' + ('first_name' in chat && chat.first_name))
-    }
+        clearTimeout(idTimeoutNextMessagePsychology)
 
-    if (text === '/game') {
-      await ctx.reply('Загадал цифру от 0 до 9, нужно отгадать.')
-      const random = Math.floor(Math.random() * 10)
+        // Поместить сообщение в список всех сообщений для психолога
+        await db.setMessagePsychology(message)
 
-      chats[chat.id] = random
-
-      bot.action('test', async ctx => {
-        console.log(ctx)
-        try {
-          await ctx.answerCbQuery()
-        } catch (error) {
-          console.error(error)
+        // Отправить поступившее сообщение с вопросом в чат психолога
+        if (idPsychology) {
+          await ctx.telegram.sendMessage(idPsychology, ANSWER_BOT.new_message_received)
+          await ctx.telegram.sendMessage(idPsychology, newUserMessage)
         }
-      })
+        return await ctx.reply(ANSWER_BOT.send_message_psychology)
+      }
 
-      return ctx.reply(
-        'Можно отгадывать',
-        Markup.inlineKeyboard([
-          Markup.button.callback('👍', 'like'),
-          Markup.button.callback('👎', 'dislike'),
-          Markup.button.callback('0', '0'),
-          Markup.button.callback('1', '1'),
-          Markup.button.callback('2', '2'),
-          Markup.button.callback('3', '3'),
-          Markup.button.callback('4', '4'),
-          Markup.button.callback('5', '5'),
-          Markup.button.callback('6', '6'),
-          Markup.button.callback('7', '7'),
-          Markup.button.callback('8', '8'),
-          Markup.button.callback('9', '9'),
-        ]),
-      )
+      const isPsychology = await db.checkIsPsychologist(chat.id)
+
+      // Если сообщение от психолога, проверяется наличие id сообщения в ответе психолога для ответа
+      if (isPsychology) {
+        const msg = newMessage.text.trim().split(' ')
+        const idMessage = Number(msg[0])
+        const answerPsychologyString = msg.slice(1).join(' ')
+
+        if (!isNaN(idMessage)) {
+          const messagePsychology = await db.getMessagePsychologyById(idMessage)
+
+          if (messagePsychology) {
+            const { chat, text } = messagePsychology
+
+            await ctx.telegram.sendMessage(chat.id, 'Вы ранее направляли вопрос психологу')
+            await ctx.telegram.sendMessage(chat.id, `Вопрос: "${text}"`)
+            await ctx.telegram.sendMessage(chat.id, `Ответ: "${answerPsychologyString}"`)
+            await db.deleteMessagePsychologyById(idMessage)
+            return await ctx.reply(ANSWER_BOT.successfully_sent)
+          }
+        } else {
+          const inlineKeyboard = getListInlineKeyboard(ListActions.GET_ALL_MESSAGES_PSYCHOLOGY)
+
+          return await ctx.reply(ANSWER_BOT.error_message_id_in_answer_psychology, inlineKeyboard)
+        }
+      }
+      // setTimeout(() => {
+      //   ctx.update.message.chat.id //854241396
+      //   ctx.sendMessage('Ответ на вопрос')
+      // }, 10000)
+
+      // const id = setTimeout(() => {
+      //   ctx.reply(ANSWER_BOT.search)
+      // }, 3000)
+
+      // clearTimeout(id)
+      return await ctx.reply(ANSWER_BOT.no_understand)
+    } catch (error) {
+      return ctx.answerCbQuery(ANSWER_BOT.error)
     }
-
-    return ctx.reply('Что-то я Вас не понимаю...')
   })
-  // bot.on('text', (ctx) => {
-  //   console.log(ctx.update.message);
-
-  //   // db.writeMessage(ctx.update.message.text, ctx.update.message.date);
-  //   console.log(ctx);
-
-  //   const res = fileQ.data.find((item) => {
-  //     console.log(item.question, '===', ctx.update.message.text);
-
-  //     if (
-  //       // typeof ctx.update.message === 'string' &&
-  //       item.question === ctx.update.message.text
-  //     ) {
-  //       return true;
-  //     }
-  //     return false;
-  //   });
-
-  //   if (res?.response) {
-  //     ctx.reply(res.response);
-  //   } else {
-  //     ctx.reply(fileQ.data[fileQ.data.length - 1].response);
-  //   }
-  //   // ctx.reply(
-  //   //   'Привет! Меня зовут Марвин. Я – интеллектуальная система,'
-  //   // );
-  // });
 
   bot.launch()
 }
