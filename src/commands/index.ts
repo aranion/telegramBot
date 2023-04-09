@@ -29,15 +29,15 @@ const start = async (ctx: Ctx) => {
   return ctx.reply(ANSWER_BOT.start)
 }
 // Помощь с ботом
-const help = (ctx: Ctx) => {
+const help = async (ctx: Ctx) => {
   ctx.reply('Тут будет Помощь с ботом ...')
 }
 // Информация о боте
-const info = (ctx: Ctx) => {
+const info = async (ctx: Ctx) => {
   ctx.reply('Тут будет Информация о боте ...')
 }
 // Выйти из чата
-const quit = (ctx: Ctx) => {
+const quit = async (ctx: Ctx) => {
   ctx.reply('Тут будет Выйти из чата ...')
 }
 // Получить все команды для психолога
@@ -76,10 +76,10 @@ const middlewareCommandsInit = (bot: Telegraf<Scenes.SceneContext<Scenes.SceneSe
 }
 
 // Установка и регистрация команд бота
-export const commandsInit = async (bot: Telegraf<Scenes.SceneContext<Scenes.SceneSessionData>>) => {
+export const commandsInit = (bot: Telegraf<Scenes.SceneContext<Scenes.SceneSessionData>>) => {
   try {
-    await bot.telegram.setMyCommands(COMMANDS)
     middlewareCommandsInit(bot)
+    bot.telegram.setMyCommands(COMMANDS)
   } catch (error) {
     console.log('Error COMMANDS', error)
   }

@@ -109,7 +109,7 @@ export const actionsInit = (bot: Telegraf<Scenes.SceneContext<Scenes.SceneSessio
         return ctx.reply(ANSWER_BOT.select_category, inlineKeyboard)
       }
 
-      return ctx.answerCbQuery(`Ой, ${ctx.match[0]}! нет такой`)
+      return ctx.answerCbQuery(`${ctx.match[0]} нет такого действия`)
     })
   } catch (error) {
     console.log('Error ACTION', error)
