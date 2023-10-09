@@ -1,10 +1,12 @@
 {
-  "name": "telegram-bot",
-  "version": "1.0.0",
-  "description": "Telegram Bot",
-  "license": "ISC",
-  "scripts": {
-    "start": "",
-    "build": ""
-  }
+    "name": "telegram-bot",
+    "version": "1.0.0",
+    "description": "Telegram Bot",
+    "license": "ISC",
+    "scripts": {
+        "init": "python.exe -m venv venv & cd .\\venv\\Scripts & .\\activate & cd ../../ & pip install -r requirements.txt",
+        "start": "python.exe .\\src\\main.py",
+        "build": "",
+        "getPackagePython": "pip freeze > requirements.txt"
+    }
 }
