@@ -162,3 +162,4 @@ docs/_build/
 
 /venv
 service_account_key.json
+.idea
