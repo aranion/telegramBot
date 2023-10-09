@@ -1,10 +1,12 @@
 import os
 
 config = {
+    # Авторизационные данные для Firebase по login\password
     'authorFirebase': {
         'email': '',
         'password': '',
     },
+    # Авторизационный сертификат для Firebase
     'serviceAccount': {
         'type': '',
         'project_id': '',
@@ -18,6 +20,7 @@ config = {
         'client_x509_cert_url': '',
         'universe_domain': ''
     },
+    # Настройка БД в Firebase
     'firebase': {
         'apiKey': '',
         'authDomain': '',
@@ -27,6 +30,7 @@ config = {
         'appId': '',
         'databaseURL': '',
     },
+    # Токен чат бота из telegram
     'botToken': '',
     'storagePath': f'{os.path.dirname(os.path.realpath(__file__))}/files/',
 }
