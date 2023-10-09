@@ -8,14 +8,7 @@ def eventGetUserMessageInit(bot, my_db, catch):
     def get_user_text(message):
         try:
             chat_id = message.chat.id
-            # Направлять ли следующее сообщение психологу
-            is_next_message_psychology = my_db.getIsNextMessagePsychology(chat_id)
-            # Проверить является пользователь сообщения психологом
             is_psychology = my_db.checkIsPsychologist(chat_id)
-
-            # sendResult(my_db.addCategory(chat_id, message.text), chat_id)
-            # categories = my_db.getCategories()
-            # sub_categories = my_db.getCategories(1)
 
             # Если сообщение отправляет психолог
             if is_psychology:
@@ -30,7 +23,7 @@ def eventGetUserMessageInit(bot, my_db, catch):
 
                     # Если нет вопросов для психолога
                     if not message_psychology:
-                        answer = ANSWER_BOT['error_question_id_in_question_psychology']
+                        answer = ANSWER_BOT['error_find_user_message_by_id']
                         # И если это не команда на удаление
                         if not is_command_delete:
                             answer += ANSWER_BOT['error_message_id_in_message_psychology']
@@ -46,7 +39,7 @@ def eventGetUserMessageInit(bot, my_db, catch):
                             },
                         ]
                         reply_markup = generateReplyMarkup(list_data_buttons)
-                        answer = f'Вы удаляете сообщение:\n\nID: {message_id}, Сообщение: \"{message_psychology["text"]}\"\n\nУдалить сообщение?'
+                        answer = f'Вы хотите удалить?:\n\nID: {message_id}, Сообщение: \"{message_psychology["text"]}\"'
                         bot.send_message(chat_id=chat_id, text=answer, reply_markup=reply_markup)
                     else:
                         answer_psychology_string = ' '.join(list_str)
@@ -63,6 +56,8 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     bot.reply_to(message, ANSWER_BOT['error_message_id_in_answer_psychology'])
                     print(ANSWER_BOT['error_message_id_in_answer_psychology'], ex)
             else:
+                is_next_message_psychology = my_db.getIsNextMessagePsychology(chat_id)
+
                 # Записываются все сообщения от пользователя (стоит ограничение только последние 5шт)
                 my_db.setMessage(message)
 
@@ -71,7 +66,7 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     # Получаем всех психологов
                     all_psychologists = my_db.getAllPsychologists()
                     # Формируем сообщение для психолога
-                    new_user_message = f'id: {message.message_id}, сообщение: "${message.text}"'
+                    new_user_message = f'ID: {message.message_id}\nСообщение: "{message.text}"'
 
                     # Добавить новое сообщение для психолога в БД
                     my_db.addNewMessagePsychology(message)
@@ -85,11 +80,11 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     # Уведомить пользователя об успешной отправки сообщения
                     bot.reply_to(message, ANSWER_BOT['send_message_psychology'])
                 else:
-                    bot.reply_to(message, ANSWER_BOT['no_understand'] + '\nХмм, но возможно ответ... 42!')
+                    bot.reply_to(message, ANSWER_BOT['no_understand'])
         except Exception as ex:
             catch(ex)
 
     @bot.message_handler()
     # @bot.message_handler(content_types=['photo', 'audio', 'sticker', 'document', 'video', 'video_note', 'voice', 'location', 'contact', ''])
     def get_user_other(message):
-        bot.send_message(message.chat.id, 'Я не понимаю такой формат... Попробуйте задать вопрос текстом')
+        bot.send_message(message.chat.id, ANSWER_BOT['i_dont_know_format_file'])

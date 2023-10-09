@@ -37,6 +37,11 @@ ALL_BUTTONS = {
         'text': 'Удалить сообщение по ID',
         'action': ListActions.DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS.value,
     },
+    'QUIT': {
+        'text': 'Выйти',
+        'action': ListActions.QUIT.value
+    }
+
 }
 
 # Доступные действия для психологов:
@@ -52,4 +57,8 @@ buttons_available_action_psychologist = [
 buttons_available_action_user = [
     ALL_BUTTONS['SEND_MESSAGE_PSYCHOLOGISTS'],
     ALL_BUTTONS['SEARCH_CATEGORY'],
+]
+
+buttons_quit = [
+    ALL_BUTTONS['QUIT']
 ]

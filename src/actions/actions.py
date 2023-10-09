@@ -52,7 +52,7 @@ def actionsInit(bot, my_db, sendResult):
                         for key in messages_psychology:
                             answer += f'Id: {key}, Сообщение: \"{messages_psychology[key]["text"]}\"\n'
 
-                        answer += f'\n{ANSWER_BOT["send_user_question"]}'
+                        answer += f'\n{ANSWER_BOT["send_answer_for_user"]}'
                         return bot.send_message(chat_id, answer)
                     else:
                         return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
@@ -76,7 +76,7 @@ def actionsInit(bot, my_db, sendResult):
                             bot.send_message(chat_id, answer)
 
                             ++index
-                        return bot.send_message(chat_id, ANSWER_BOT['send_user_question'])
+                        return bot.send_message(chat_id, ANSWER_BOT['send_answer_for_user'])
                     else:
                         return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
                 elif type_action == _value(ListActions.GET_ALL_PSYCHOLOGISTS):
@@ -102,6 +102,12 @@ def actionsInit(bot, my_db, sendResult):
                     if not is_psychologist:
                         return bot.send_message(chat_id, ANSWER_BOT['not_access'])
 
+                    # sendResult(my_db.addCategory(chat_id, message.text), chat_id)
+
+                    return bot.send_message(chat_id, 'Пока не могу...')
+                elif type_action == _value(ListActions.QUIT):
+                    # Кнопка "Выход из чата"
+
                     return bot.send_message(chat_id, 'Пока не могу...')
                 elif re.search(f'^{_value(ListActions.DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS)}(_ID_\d+)?$', type_action):
                     # Кнопка "Удалить вопрос по ID"
@@ -116,7 +122,7 @@ def actionsInit(bot, my_db, sendResult):
                         message_id = int(list_str[-1:][0])
 
                         return sendResult(my_db.deleteMessagePsychologyById(message_id), chat_id)
-                    return bot.send_message(chat_id, ANSWER_BOT['how_delete_question_by_id'])
+                    return bot.send_message(chat_id, ANSWER_BOT['how_delete_message_by_id'])
                 elif re.search(f'^{_value(ListActions.SEARCH_CATEGORY)}((_NEXT_|_BACK_)\d+)?$', type_action):
                     next_re = re.search('_NEXT_\d+', type_action)
                     back_re = re.search('_BACK_\d+', type_action)
@@ -139,7 +145,7 @@ def actionsInit(bot, my_db, sendResult):
                     for category in categories:
                         btn = {
                             'text': category.get('name'),
-                            'action': f'{"".join(ListActions.SEARCH_CATEGORY.value)}_NEXT_{category.get("id")}',
+                            'action': f'{_value(ListActions.SEARCH_CATEGORY)}_NEXT_{category.get("id")}',
                         }
 
                         list_data_buttons.append(btn)
@@ -159,7 +165,7 @@ def actionsInit(bot, my_db, sendResult):
                         if back_id != 0:
                             btn = {
                                 'text': "<- Назад",
-                                'action': f'{"".join(ListActions.SEARCH_CATEGORY.value)}_BACK_{back_id}',
+                                'action': f'{_value(ListActions.SEARCH_CATEGORY)}_BACK_{back_id}',
                             }
 
                             list_data_buttons.append(btn)
@@ -171,7 +177,7 @@ def actionsInit(bot, my_db, sendResult):
                     bot.send_message(call.message.chat.id, ANSWER_BOT['i_dont_know_actions'], parse_mode='html')
             elif call.inline_message_id:
                 # Если сообщение из инлайн-режима
-                bot.edit_message_text(inline_message_id=call.inline_message_id, text="Действия которое я не знаю...")
+                bot.edit_message_text(inline_message_id=call.inline_message_id, text=ANSWER_BOT['actions_i_dont_know'])
         except Exception as ex:
             print('Ошибка при выполнении действия', ex)
             bot.send_message(call.message.chat.id, ANSWER_BOT['error'], parse_mode='html')

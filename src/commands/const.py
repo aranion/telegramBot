@@ -8,5 +8,8 @@ COMMANDS = [
 ]
 
 PRIVATE_COMMANDS = [
-    {'command': ListPrivateCommands.GET_ALL_COMMANDS_PSYCHOLOGISTS.value, 'description': 'Получить все команды психолога'},
+    {
+        'command': ListPrivateCommands.GET_ALL_COMMANDS_PSYCHOLOGISTS.value,
+        'description': 'Получить все команды психолога'
+    },
 ]

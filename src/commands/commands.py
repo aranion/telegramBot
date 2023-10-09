@@ -1,5 +1,4 @@
-from src.actions.const import buttons_available_action_psychologist, buttons_available_action_user
-from src.actions.enums import ListActions
+from src.actions.const import buttons_available_action_psychologist, buttons_available_action_user, buttons_quit
 from src.answer.answer import ANSWER_BOT
 from src.commands.const import COMMANDS, PRIVATE_COMMANDS
 from src.commands.enums import ListCommands, ListPrivateCommands
@@ -28,19 +27,19 @@ def commandInit(bot, my_db):
         bot.send_message(chat_id, ANSWER_BOT['start'], parse_mode='html')
 
         if is_psychologist:
-            answer = 'Доступные действия для психологов:'
+            answer = ANSWER_BOT['all_commands_psychology']
             reply_markup = generateReplyMarkup(buttons_available_action_psychologist)
         else:
-            answer = 'Вы можете задать вопрос специалисту или найти ответ в моей базе вопросов:'
+            answer = ANSWER_BOT['available_commands_user']
             reply_markup = generateReplyMarkup(buttons_available_action_user)
 
         bot.send_message(chat_id=chat_id, text=answer, reply_markup=reply_markup)
 
     @bot.message_handler(commands=[_value(ListCommands.INFO)])
     def _info(message):
-        chat = message.chat
+        chat_id = message.chat.id
 
-        bot.send_message(chat.id, ANSWER_BOT['about_bot'])
+        bot.send_message(chat_id, ANSWER_BOT['about_bot'])
 
     @bot.message_handler(commands=[_value(ListCommands.HELP)])
     def _help(message):
@@ -56,22 +55,19 @@ def commandInit(bot, my_db):
             for command in PRIVATE_COMMANDS:
                 commands += f"/{''.join(command['command'])} - {command['description']}\n"
 
-        bot.send_message(chat_id, 'Доступные команды: ' + commands, parse_mode='html')
+        bot.send_message(chat_id, 'Команды: ' + commands, parse_mode='html')
 
     @bot.message_handler(commands=[_value(ListCommands.QUIT)])
     def _quit(message):
         chat_id = message.chat.id
         is_psychologist = my_db.checkIsPsychologist(chat_id)
-        reply_markup = generateReplyMarkup([{
-            'text': 'Выйти',
-            'action': '----'
-        }])
-        answer = 'TODO: Вы уверены что хотите покинуть чат?'
+        reply_markup = generateReplyMarkup(buttons_quit)
+        answer = ANSWER_BOT['quit']
 
         if is_psychologist:
-            answer += ' Ваши права как психолога будут удалены!'
+            answer += ANSWER_BOT['quit_psychologist']
         else:
-            answer += ' Все ваши не отвеченные вопросы будут удалены!'
+            answer += ANSWER_BOT['quit_user']
 
         bot.send_message(chat_id, answer, reply_markup=reply_markup)
 
@@ -85,4 +81,4 @@ def commandInit(bot, my_db):
             return
 
         reply_markup = generateReplyMarkup(buttons_available_action_psychologist)
-        bot.send_message(chat_id=chat_id, text='Доступные команды:', reply_markup=reply_markup)
+        bot.send_message(chat_id=chat_id, text=ANSWER_BOT['all_commands_psychology'], reply_markup=reply_markup)

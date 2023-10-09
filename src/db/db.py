@@ -33,12 +33,13 @@ class MyDB:
             print('MyDB->addNewChat')
 
             chat_id = chat.id
-            ref_chats = db.reference(f'/chats')
+            ref_chats = db.reference('/chats/')
             data = ref_chats.get()
 
             if (not data) or (not data.get(str(chat_id))):
                 new_data = ref_chats.child(f'{chat_id}')
                 new_data.set({
+                    'username': chat.username,
                     'first_name': chat.first_name,
                     'type': chat.type,
                     'id': chat_id,
@@ -46,7 +47,6 @@ class MyDB:
                     'is_next_message_psychology': False
                 })
                 return
-            print('Чат уже создан')
         except Exception as ex:
             print('Ошибка при добавлении нового чата', ex)
 
@@ -284,11 +284,11 @@ class MyDB:
             data = ref_messages_psychology.get()
 
             if not data:
-                raise ValueError(ANSWER_BOT['error_question_id_in_question_psychology'])
+                raise ValueError(ANSWER_BOT['error_find_user_message_by_id'])
 
             ref_messages_psychology.delete()
 
-            return {'answer': ANSWER_BOT['successfully_question_psychology_delete']}
+            return {'answer': ANSWER_BOT['successfully_message_psychology_delete']}
         except ValueError as ex:
             print('Ошибка при удалении сообщения из БД', ex)
             return {'error': ex}
