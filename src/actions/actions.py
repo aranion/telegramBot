@@ -50,10 +50,10 @@ def actionsInit(bot, my_db, sendResult):
 
                     if messages_psychology:
                         for key in messages_psychology:
-                            answer += f'Id: {key}, Сообщение: \"{messages_psychology[key]["text"]}\"\n'
+                            answer += f'ID: <code>{key}</code>, Сообщение: \"{messages_psychology[key]["text"]}\"\n'
 
                         answer += f'\n{ANSWER_BOT["send_answer_for_user"]}'
-                        return bot.send_message(chat_id, answer)
+                        return bot.send_message(chat_id, answer, parse_mode='html')
                     else:
                         return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
                 elif type_action == _value(ListActions.GET_TEN_MESSAGES_FOR_PSYCHOLOGISTS):
@@ -72,8 +72,8 @@ def actionsInit(bot, my_db, sendResult):
                             # Показать только первые 10 сообщений
                             if index > 10:
                                 return bot.send_message(chat_id, ANSWER_BOT['show_first_10_message'])
-                            answer = f'Id: {key}, Сообщение: \"{messages_psychology[key]["text"]}\"'
-                            bot.send_message(chat_id, answer)
+                            answer = f'ID: <code>{key}</code>, Сообщение: \"{messages_psychology[key]["text"]}\"'
+                            bot.send_message(chat_id, answer, parse_mode='html')
 
                             ++index
                         return bot.send_message(chat_id, ANSWER_BOT['send_answer_for_user'])
@@ -93,8 +93,8 @@ def actionsInit(bot, my_db, sendResult):
                         id_psychologist = all_psychologists[key].get("id")
                         first_name_psychologist = all_psychologists[key].get("first_name")
 
-                        answer += f'Id: {id_psychologist}, Имя: \"{first_name_psychologist}\"\n'
-                    return bot.send_message(chat_id, answer)
+                        answer += f'ID: <code>{id_psychologist}</code>, Имя: \"{first_name_psychologist}\"\n'
+                    return bot.send_message(chat_id, answer, parse_mode='html')
                 elif type_action == _value(ListActions.ADD_NEW_CATEGORY):
                     # Кнопка "Добавить новую подкатегорию"
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
@@ -108,6 +108,17 @@ def actionsInit(bot, my_db, sendResult):
                 elif type_action == _value(ListActions.QUIT):
                     # Кнопка "Выход из чата"
                     return bot.send_message(chat_id, 'Пока не могу 😓')
+                elif type_action == _value(ListActions.GET_ARCHIVE_MESSAGE_PSYCHOLOGIST):
+                    # Кнопка "Получить все архивные сообщения"
+                    message_archive = my_db.getMessagesInArchive(chat_id)
+
+                    if not message_archive:
+                        bot.send_message(chat_id, 'Архивных сообщений нет')
+                    else:
+                        for key in message_archive:
+                            answer = f'<b>Вопрос:</b>\n\"{message_archive[key].get("text")}\"\n<b>Ответ:</b>\n\"<code>{message_archive[key].get("answer")}</code>\"'
+                            bot.send_message(chat_id, answer, parse_mode='html')
+                    return
                 elif re.search(f'^{_value(ListActions.DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS)}(_ID_\d+)?$', type_action):
                     # Кнопка "Удалить вопрос по ID"
                     id_message_delete_re = re.search('_ID_\d+', type_action)

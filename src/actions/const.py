@@ -6,15 +6,19 @@ ALL_BUTTONS = {
         'action': ListActions.GET_ALL_PSYCHOLOGISTS.value
     },
     'ALL_MESSAGE_PSYCHOLOGISTS': {
-        'text': 'Получить все сообщения',
+        'text': 'Получить все неотвеченные сообщения',
         'action': ListActions.GET_ALL_MESSAGES_FOR_PSYCHOLOGISTS.value
+    },
+    'ARCHIVE_MESSAGE_PSYCHOLOGIST': {
+        'text': 'Архивные сообщения',
+        'action': ListActions.GET_ARCHIVE_MESSAGE_PSYCHOLOGIST.value
     },
     'TEN_MESSAGE_PSYCHOLOGISTS': {
         'text': 'Получить 10 последних сообщения',
         'action': ListActions.GET_TEN_MESSAGES_FOR_PSYCHOLOGISTS.value
     },
     'DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS': {
-        'text': 'Удалить сообщение пользователя по ID',
+        'text': 'Удалить сообщение пользователя',
         'action': ListActions.DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS.value
     },
     'SEARCH_CATEGORY': {
@@ -49,12 +53,13 @@ ALL_BUTTONS = {
 
 # Доступные действия для психологов:
 buttons_available_action_psychologist = [
-    ALL_BUTTONS['ALL_PSYCHOLOGISTS'],
     ALL_BUTTONS['ALL_MESSAGE_PSYCHOLOGISTS'],
     ALL_BUTTONS['TEN_MESSAGE_PSYCHOLOGISTS'],
+    ALL_BUTTONS['ARCHIVE_MESSAGE_PSYCHOLOGIST'],
+    ALL_BUTTONS['ALL_PSYCHOLOGISTS'],
     ALL_BUTTONS['DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS'],
-    ALL_BUTTONS['SEARCH_CATEGORY'],
     ALL_BUTTONS['NEW_CATEGORY'],
+    ALL_BUTTONS['SEARCH_CATEGORY'],
 ]
 # Доступные действия для пользователя
 buttons_available_action_user = [

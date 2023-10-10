@@ -2,8 +2,8 @@ from src.commands.enums import ListCommands, ListPrivateCommands
 
 COMMANDS = [
     {'command': ListCommands.START.value, 'description': 'Запуск бота'},
-    {'command': ListCommands.INFO.value, 'description': 'Информация о Боте'},
-    {'command': ListCommands.HELP.value, 'description': 'Помощь в работе с Ботом'},
+    {'command': ListCommands.INFO.value, 'description': 'Информация о боте'},
+    {'command': ListCommands.HELP.value, 'description': 'Помощь в работе с ботом'},
     {'command': ListCommands.QUIT.value, 'description': 'Выйти из чата'},
 ]
 

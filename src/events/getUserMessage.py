@@ -44,15 +44,18 @@ def eventGetUserMessageInit(bot, my_db, catch):
                         bot.send_message(chat_id=chat_id, text=answer, reply_markup=reply_markup)
                     else:
                         answer_psychology_string = ' '.join(list_str)
-                        answer = f"""{ANSWER_BOT['send_question']}\n\n<b>Вопрос</b>: \"{message_psychology['text']}\"\n<b>Ответ</b>: \"{answer_psychology_string}\""""
+                        answer = f"""{ANSWER_BOT['send_question']}\n\n<b>Вопрос</b>:\n\"{message_psychology['text']}\"\n<b>Ответ</b>:\n\"{answer_psychology_string}\""""
                         # Ответ для пользователя
                         bot.send_message(message_psychology['chat_id'], answer, parse_mode='html')
                         # Ответ для психолога
                         bot.send_message(chat_id, ANSWER_BOT['successfully_sent'], parse_mode='html')
                         # Вопрос удаляется из БД, для предотвращения повторного ответа
                         my_db.deleteMessagePsychologyById(message_id)
+                        # Записать ответ в чат психолога, для дальнейшего управления и использования
+                        data = {'text': message_psychology['text'], 'message_id': message_id,
+                                'answer': answer_psychology_string}
+                        my_db.addMessageInArchive(chat_id, data)
                         # TODO Предоставить возможность психологу изменить отправленное сообщение...
-                        # TODO может быть стоит помечать их как отвеченные, а не удалять...
                 except ValueError as ex:
                     bot.reply_to(message, ANSWER_BOT['error_message_id_in_answer_psychology'])
                     print(ANSWER_BOT['error_message_id_in_answer_psychology'], ex)
@@ -67,7 +70,7 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     # Получаем всех психологов
                     all_psychologists = my_db.getAllPsychologists()
                     # Формируем сообщение для психолога
-                    new_user_message = f'ID: {message.message_id}\nСообщение: "{message.text}"'
+                    new_user_message = f'ID: <code>{message.message_id}</code>\nСообщение: "{message.text}"'
 
                     # Добавить новое сообщение для психолога в БД
                     my_db.addNewMessagePsychology(message)

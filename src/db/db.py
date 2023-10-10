@@ -1,3 +1,5 @@
+import json
+
 import firebase_admin
 from firebase_admin import credentials, db
 from src.answer.answer import ANSWER_BOT
@@ -114,6 +116,36 @@ class MyDB:
             print('Ошибка при добавлении новой категории', ex)
             return {'error': ex}
 
+    @classmethod
+    def addMessageInArchive(cls, chat_id, question):
+        """Добавить ответ на вопрос отправленный психологом в архив чата"""
+        try:
+            print('MyDB->addMessageInArchive')
+
+            is_psychologist = cls.checkIsPsychologist(chat_id)
+
+            # Если не психолог
+            if not is_psychologist:
+                return
+
+            ref_chat = db.reference(f'/chats/{chat_id}/archive/')
+            ref_chat.push(question)
+        except Exception as ex:
+            print('Ошибка при добавлении ответа на вопрос отправленный психологом в архив', ex)
+
+    @classmethod
+    def getMessagesInArchive(cls, chat_id):
+        """Получить все сообщения из архива в чате психолога"""
+        try:
+            print('MyDB->getMessagesInArchive')
+
+            ref_chat = db.reference(f'/chats/{chat_id}/archive/')
+            data = ref_chat.get()
+
+            return data
+        except Exception as ex:
+            print('Ошибка при получении ответа на вопрос отправленный психологом в архив', ex)
+
     @staticmethod
     def getAllPsychologists():
         """Получить всех психологов"""
@@ -202,7 +234,7 @@ class MyDB:
             for item in temp_data:
                 if parent_id:
                     # Подкатегории по ID
-                    if item.get('parent_id') and int(parent_id) == int(item.get('parent_id')):
+                    if 'parent_id' in item and int(parent_id) == int(item.get('parent_id')):
                         data.append(item)
                 else:
                     # Категории верхнего уровня
@@ -302,14 +334,6 @@ class MyDB:
         except Exception as ex:
             print('Ошибка при записи сообщения в БД', ex)
 
-    @classmethod
-    def setQuestion(cls, answer, question):
-        """Записать вопрос в БД"""
-        try:
-            print('MyDB->setQuestion')
-            # TODO После отправки ответа психолога на вопрос, помещать его в БД
-        except Exception as ex:
-            print('Ошибка при записи сообщения в БД', ex)
 
     @classmethod
     def setIsNextMessagePsychology(cls, chat_id, is_value):
