@@ -12,7 +12,6 @@ def commandInit(bot, my_db):
     @bot.message_handler(commands=[_value(ListCommands.START)])
     def _start(message):
         chat_id = message.chat.id
-        photo = open('..\\resources\\imgs\\logo.png', 'rb')
         list_data_buttons = []
         answer = ''
         reply_markup = None
@@ -22,14 +21,13 @@ def commandInit(bot, my_db):
 
         is_psychologist = my_db.checkIsPsychologist(chat_id)
 
-        bot.send_sticker(chat_id, ANSWER_BOT['start_sticky'])
-        # bot.send_photo(chat_id, photo)
-        bot.send_message(chat_id, ANSWER_BOT['start'], parse_mode='html')
+        bot.send_sticker(chat_id, 'CAACAgIAAxkBAAEBYNxlJPtTTbW5HZEh-l-8FdXUEz11DAACZTUAAsG5CEkBLmVNHWv5WzAE')
 
         if is_psychologist:
             answer = ANSWER_BOT['all_commands_psychology']
             reply_markup = generateReplyMarkup(buttons_available_action_psychologist)
         else:
+            bot.send_message(chat_id, ANSWER_BOT['start'], parse_mode='html')
             answer = ANSWER_BOT['available_commands_user']
             reply_markup = generateReplyMarkup(buttons_available_action_user)
 

@@ -26,11 +26,11 @@ ALL_BUTTONS = {
         'action': ListActions.ADD_NEW_CATEGORY.value
     },
     'SEND_MESSAGE_PSYCHOLOGISTS': {
-        'text': 'Задать вопрос специалисту',
+        'text': 'Задать вопрос психологу',
         'action': ListActions.SEND_MESSAGE_PSYCHOLOGISTS.value
     },
     'CANCEL_SEND_MESSAGE_PSYCHOLOGISTS': {
-        'text': 'Отмена',
+        'text': 'Не сейчас',
         'action': ListActions.CANCEL_SEND_MESSAGE_PSYCHOLOGISTS.value,
     },
     'DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS': {
@@ -40,8 +40,11 @@ ALL_BUTTONS = {
     'QUIT': {
         'text': 'Выйти',
         'action': ListActions.QUIT.value
+    },
+    'SEARCH_OTHER_CATEGORIES': {
+        'text': 'Найти другой вопрос',
+        'action': ListActions.SEARCH_CATEGORY.value
     }
-
 }
 
 # Доступные действия для психологов:
@@ -55,8 +58,8 @@ buttons_available_action_psychologist = [
 ]
 # Доступные действия для пользователя
 buttons_available_action_user = [
-    ALL_BUTTONS['SEND_MESSAGE_PSYCHOLOGISTS'],
     ALL_BUTTONS['SEARCH_CATEGORY'],
+    ALL_BUTTONS['SEND_MESSAGE_PSYCHOLOGISTS'],
 ]
 
 buttons_quit = [

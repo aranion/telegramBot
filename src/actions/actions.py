@@ -104,11 +104,10 @@ def actionsInit(bot, my_db, sendResult):
 
                     # sendResult(my_db.addCategory(chat_id, message.text), chat_id)
 
-                    return bot.send_message(chat_id, 'Пока не могу...')
+                    return bot.send_message(chat_id, 'Пока не умею 🫤')
                 elif type_action == _value(ListActions.QUIT):
                     # Кнопка "Выход из чата"
-
-                    return bot.send_message(chat_id, 'Пока не могу...')
+                    return bot.send_message(chat_id, 'Пока не могу 😓')
                 elif re.search(f'^{_value(ListActions.DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS)}(_ID_\d+)?$', type_action):
                     # Кнопка "Удалить вопрос по ID"
                     id_message_delete_re = re.search('_ID_\d+', type_action)
@@ -123,58 +122,69 @@ def actionsInit(bot, my_db, sendResult):
 
                         return sendResult(my_db.deleteMessagePsychologyById(message_id), chat_id)
                     return bot.send_message(chat_id, ANSWER_BOT['how_delete_message_by_id'])
-                elif re.search(f'^{_value(ListActions.SEARCH_CATEGORY)}((_NEXT_|_BACK_)\d+)?$', type_action):
-                    next_re = re.search('_NEXT_\d+', type_action)
-                    back_re = re.search('_BACK_\d+', type_action)
-                    list_data_buttons = []
-                    categories = []
-                    answer = ANSWER_BOT['select_category']
+                elif re.search(f'^{_value(ListActions.ANSWER_QUESTION_FROM_CATEGORY)}(_ID_\d+)?$', type_action):
+                    id_re = re.search('_ID_\d+', type_action)
 
-                    if next_re or back_re:
-                        if back_re:
-                            list_str = back_re.group().split('_')
-                            back_id = int(list_str[-1:][0]) - 1
-                            categories = my_db.getCategories(back_id)
-                        else:
-                            list_str = next_re.group().split('_')
-                            next_id = list_str[-1:][0]
-                            categories = my_db.getCategories(next_id)
+                    if id_re:
+                        list_str = id_re.group().split('_')
+                        question_id = int(list_str[-1:][0])
+                        question = my_db.getQuestionById(question_id)
+                        question_answer = '\n'.join(question.get("answer").split('\\n'))
+                        answer = f'<b>Вопрос</b>:\n\"{question.get("text")}\"\n\n<b>Ответ</b>:\n\"{question_answer}\"'
+                        reply_markup = generateReplyMarkup([ALL_BUTTONS['SEARCH_OTHER_CATEGORIES']])
+                        return bot.send_message(chat_id, answer, parse_mode='html', reply_markup=reply_markup)
+                    return
+                elif re.search(f'^{_value(ListActions.SEARCH_CATEGORY)}(_NEXT_(\d+))?$', type_action):
+                    next_re = re.search('_NEXT_(\d+)', type_action)
+                    list_buttons = []
+                    answer = ANSWER_BOT['select_category']
+                    current_category_id = None
+                    number_column = 1
+
+                    if next_re:
+                        # Если указан следующая подкатегория
+                        list_str = next_re.group().split('_')
+                        current_category_id = list_str[-1:][0]
+                        categories = my_db.getCategories(current_category_id)
                     else:
+                        # Иначе оказать все без категории
+                        answer = ANSWER_BOT['select_section']
                         categories = my_db.getCategories()
 
+                    # Подготовить кнопки категорий
                     for category in categories:
-                        btn = {
-                            'text': category.get('name'),
-                            'action': f'{_value(ListActions.SEARCH_CATEGORY)}_NEXT_{category.get("id")}',
-                        }
+                        text = category.get('name')
+                        action = f'{_value(ListActions.SEARCH_CATEGORY)}_NEXT_{category.get("id")}'
+                        list_buttons.append({'text': text, 'action': action})
 
-                        list_data_buttons.append(btn)
+                    # Если категорий нет, значит нужно показывать вопросы
+                    if len(categories) == 0:
+                        answer = ANSWER_BOT['select_suitable_question']
+                        questions = my_db.getQuestions(current_category_id)
 
-                    if len(list_data_buttons) == 0:
-                        answer = 'Подкатегорий нет, тут должны быть вопросы....'
+                        if len(questions) == 0:
+                            answer = ANSWER_BOT['sorry_category_empty']
+                            list_buttons = buttons_available_action_user
+                        for item in questions:
+                            question = item.get('text')
+                            action = f'{_value(ListActions.ANSWER_QUESTION_FROM_CATEGORY)}_ID_{item.get("id")}'
+                            list_buttons.append({'text': question, 'action': action})
+                    else:
+                        # Добавить кнопку "Назад"
+                        if current_category_id:
+                            parent_category = my_db.getCategoryById(current_category_id)
+                            parent_category_id = parent_category.get('parent_id')
+                            text = "<-- Назад"
+                            action = _value(ListActions.SEARCH_CATEGORY)
 
-                    # НАЗАД
-                    if next_re:
-                        list_str = next_re.group().split('_')
-                        current_id = [len(list_str) - 1][0]
-                        back_id = current_id - 1
+                            if parent_category_id:
+                                action += f'_NEXT_{parent_category_id}'
+                            list_buttons.append({'text': text, 'action': action})
 
-                        if back_id <= 0:
-                            back_id = 0
-
-                        if back_id != 0:
-                            btn = {
-                                'text': "<- Назад",
-                                'action': f'{_value(ListActions.SEARCH_CATEGORY)}_BACK_{back_id}',
-                            }
-
-                            list_data_buttons.append(btn)
-
-                    reply_markup = generateReplyMarkup(list_data_buttons)
-
+                        if len(categories) > 2:
+                            number_column = 2
+                    reply_markup = generateReplyMarkup(list_buttons, number_column)
                     return bot.send_message(chat_id, answer, reply_markup=reply_markup)
-                else:
-                    bot.send_message(call.message.chat.id, ANSWER_BOT['i_dont_know_actions'], parse_mode='html')
             elif call.inline_message_id:
                 # Если сообщение из инлайн-режима
                 bot.edit_message_text(inline_message_id=call.inline_message_id, text=ANSWER_BOT['actions_i_dont_know'])

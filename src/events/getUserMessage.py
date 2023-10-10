@@ -1,3 +1,4 @@
+from src.actions.const import buttons_available_action_user
 from src.actions.enums import ListActions
 from src.answer.answer import ANSWER_BOT
 from src.utils.utils import generateReplyMarkup
@@ -80,7 +81,8 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     # Уведомить пользователя об успешной отправки сообщения
                     bot.reply_to(message, ANSWER_BOT['send_message_psychology'])
                 else:
-                    bot.reply_to(message, ANSWER_BOT['no_understand'])
+                    reply_markup = generateReplyMarkup(buttons_available_action_user)
+                    bot.reply_to(message, ANSWER_BOT['no_understand'], reply_markup=reply_markup)
         except Exception as ex:
             catch(ex)
 

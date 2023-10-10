@@ -195,7 +195,7 @@ class MyDB:
         try:
             print('MyDB->getCategories')
 
-            ref_categories = db.reference(f'/categories/')
+            ref_categories = db.reference('/categories/')
             temp_data = ref_categories.get()
             data = []
 
@@ -212,6 +212,51 @@ class MyDB:
             return data
         except Exception as ex:
             print('Ошибка при получении категорий', ex)
+
+    @classmethod
+    def getCategoryById(cls, category_id):
+        """Получить категорию по ID"""
+        try:
+            print('MyDB->getCategoryById')
+
+            ref_category = db.reference(f'/categories/{category_id}/')
+            data = ref_category.get()
+
+            return data
+        except Exception as ex:
+            print('Ошибка при получении категории по ID', ex)
+
+    @classmethod
+    def getQuestions(cls, category_id=None):
+        """Получить все вопросы"""
+        try:
+            print('MyDB->getQuestion')
+
+            ref_question = db.reference('/questions/')
+            data = ref_question.get()
+
+            if category_id:
+                filter_data = []
+                for question in data:
+                    if int(question.get('category')) == int(category_id):
+                        filter_data.append(question)
+                return filter_data
+            return data
+        except Exception as ex:
+            print('Ошибка при получении вопросов', ex)
+
+    @classmethod
+    def getQuestionById(cls, question_id):
+        """Получить вопрос по ID"""
+        try:
+            print('MyDB->getQuestionById')
+
+            ref_question = db.reference(f'/questions/{question_id}')
+            data = ref_question.get()
+
+            return data
+        except Exception as ex:
+            print('Ошибка при получении вопроса по ID', ex)
 
     @staticmethod
     def checkIsPsychologist(chat_id):
@@ -254,6 +299,15 @@ class MyDB:
                 data.pop(0)
 
             ref_messages.set(data)
+        except Exception as ex:
+            print('Ошибка при записи сообщения в БД', ex)
+
+    @classmethod
+    def setQuestion(cls, answer, question):
+        """Записать вопрос в БД"""
+        try:
+            print('MyDB->setQuestion')
+            # TODO После отправки ответа психолога на вопрос, помещать его в БД
         except Exception as ex:
             print('Ошибка при записи сообщения в БД', ex)
 
