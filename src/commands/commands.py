@@ -21,7 +21,7 @@ def commandInit(bot, my_db):
 
         is_psychologist = my_db.checkIsPsychologist(chat_id)
 
-        bot.send_sticker(chat_id, 'CAACAgIAAxkBAAEBYNxlJPtTTbW5HZEh-l-8FdXUEz11DAACZTUAAsG5CEkBLmVNHWv5WzAE')
+        bot.send_sticker(chat_id, 'CAACAgIAAxkBAAIqF2UlrVpj7bxZgvd0mueVUMw49kuEAAKiOwAC-kMwSQunUtPi6GkgMAQ')
 
         if is_psychologist:
             answer = ANSWER_BOT['all_commands_psychology']
