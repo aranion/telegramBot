@@ -2,14 +2,11 @@ from src.actions.const import buttons_available_action_psychologist, buttons_ava
 from src.answer.answer import ANSWER_BOT
 from src.commands.const import COMMANDS, PRIVATE_COMMANDS
 from src.commands.enums import ListCommands, ListPrivateCommands
-from src.utils.utils import generateReplyMarkup
+from src.utils.utils import generateReplyMarkup, getValueEnum
 
 
 def commandInit(bot, my_db):
-    def _value(enum_item):
-        return ''.join(enum_item.value)
-
-    @bot.message_handler(commands=[_value(ListCommands.START)])
+    @bot.message_handler(commands=[getValueEnum('START', ListCommands)])
     def _start(message):
         chat_id = message.chat.id
         list_data_buttons = []
@@ -24,7 +21,7 @@ def commandInit(bot, my_db):
         bot.send_sticker(chat_id, 'CAACAgIAAxkBAAIqF2UlrVpj7bxZgvd0mueVUMw49kuEAAKiOwAC-kMwSQunUtPi6GkgMAQ')
 
         if is_psychologist:
-            answer = ANSWER_BOT['all_commands_psychology']
+            answer = ANSWER_BOT['all_commands_psychologist']
             reply_markup = generateReplyMarkup(buttons_available_action_psychologist)
         else:
             bot.send_message(chat_id, ANSWER_BOT['start'], parse_mode='html')
@@ -33,13 +30,13 @@ def commandInit(bot, my_db):
 
         bot.send_message(chat_id=chat_id, text=answer, reply_markup=reply_markup)
 
-    @bot.message_handler(commands=[_value(ListCommands.INFO)])
+    @bot.message_handler(commands=[getValueEnum('INFO',  ListCommands)])
     def _info(message):
         chat_id = message.chat.id
 
         bot.send_message(chat_id, ANSWER_BOT['about_bot'])
 
-    @bot.message_handler(commands=[_value(ListCommands.HELP)])
+    @bot.message_handler(commands=[getValueEnum('HELP', ListCommands)])
     def _help(message):
         chat_id = message.chat.id
         commands = '\n'
@@ -55,7 +52,7 @@ def commandInit(bot, my_db):
 
         bot.send_message(chat_id, 'Команды: ' + commands, parse_mode='html')
 
-    @bot.message_handler(commands=[_value(ListCommands.QUIT)])
+    @bot.message_handler(commands=[getValueEnum('QUIT', ListCommands)])
     def _quit(message):
         chat_id = message.chat.id
         is_psychologist = my_db.checkIsPsychologist(chat_id)
@@ -69,8 +66,8 @@ def commandInit(bot, my_db):
 
         bot.send_message(chat_id, answer, reply_markup=reply_markup)
 
-    @bot.message_handler(commands=[_value(ListPrivateCommands.GET_ALL_COMMANDS_PSYCHOLOGISTS)])
-    def _get_all_commands_psychology(message):
+    @bot.message_handler(commands=[getValueEnum('GET_ALL_COMMANDS_PSYCHOLOGISTS', ListPrivateCommands)])
+    def _get_all_commands_psychologist(message):
         chat_id = message.chat.id
 
         is_psychologist = my_db.checkIsPsychologist(chat_id)
@@ -79,4 +76,4 @@ def commandInit(bot, my_db):
             return
 
         reply_markup = generateReplyMarkup(buttons_available_action_psychologist)
-        bot.send_message(chat_id=chat_id, text=ANSWER_BOT['all_commands_psychology'], reply_markup=reply_markup)
+        bot.send_message(chat_id=chat_id, text=ANSWER_BOT['all_commands_psychologist'], reply_markup=reply_markup)

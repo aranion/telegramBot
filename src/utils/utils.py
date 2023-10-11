@@ -1,5 +1,7 @@
 from telebot import types
 
+from src.actions.enums import ListActions
+
 
 def generateReplyMarkup(list_data_buttons, cols=1):
     """Возвращает подготовленные кнопки"""
@@ -22,3 +24,11 @@ def generateReplyMarkup(list_data_buttons, cols=1):
     reply_markup = types.InlineKeyboardMarkup(build_menu(button_list, n_cols=cols))
 
     return reply_markup
+
+
+def getValueEnum(enum_key, enum=ListActions):
+    try:
+        return ''.join(enum[enum_key].value)
+    except Exception as ex:
+        print(f'Ошибка в получении значения {enum_key} в {enum}', ex)
+        return ''

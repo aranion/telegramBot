@@ -26,8 +26,8 @@ class BotActions:
         for psychologist_id in dict_all_psychologists:
             reply_markup = generateReplyMarkup(buttons_available_action_psychologist)
 
-            self.bot.send_message(psychologist_id, ANSWER_BOT['welcome_psychology'])
-            self.bot.send_message(chat_id=psychologist_id, text=ANSWER_BOT['all_commands_psychology'],
+            self.bot.send_message(psychologist_id, ANSWER_BOT['welcome_psychologist'])
+            self.bot.send_message(chat_id=psychologist_id, text=ANSWER_BOT['all_commands_psychologist'],
                                   reply_markup=reply_markup)
 
     def notificationUsers(self):

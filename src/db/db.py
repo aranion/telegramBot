@@ -46,17 +46,17 @@ class MyDB:
                     'type': chat.type,
                     'id': chat_id,
                     'isPsychologist': False,
-                    'is_next_message_psychology': False
+                    'is_next_message_psychologist': False
                 })
                 return
         except Exception as ex:
             print('Ошибка при добавлении нового чата', ex)
 
     @classmethod
-    def addNewMessagePsychology(cls, message):
+    def addNewMessagePsychologist(cls, message):
         """Записать сообщение для психолога"""
         try:
-            print('MyDB->addNewMessagePsychology')
+            print('MyDB->addNewMessagePsychologist')
 
             chat_id = message.chat.id
             is_psychologist = cls.checkIsPsychologist(chat_id)
@@ -69,10 +69,10 @@ class MyDB:
             new_message = {'date': message.date, 'chat_id': chat_id, 'text': message.text}
             message_id = message.message_id
 
-            new_data = ref_main.child(f'messagesPsychology/{message_id}')
+            new_data = ref_main.child(f'messagesPsychologist/{message_id}')
             new_data.set(new_message)
 
-            cls.setIsNextMessagePsychology(chat_id, False)
+            cls.setIsNextMessagePsychologist(chat_id, False)
         except Exception as ex:
             print('Ошибка при записи сообщения для психолога в БД', ex)
 
@@ -167,46 +167,46 @@ class MyDB:
             print('Ошибка при получении всех психологов', ex)
 
     @classmethod
-    def getMessagesPsychology(cls, current_chat_id):
+    def getMessagesPsychologist(cls, current_chat_id):
         """Получить все сообщения для психолога"""
         try:
-            print('MyDB->getMessagesPsychology')
+            print('MyDB->getMessagesPsychologist')
 
             is_psychologist = cls.checkIsPsychologist(current_chat_id)
 
             if not is_psychologist:
                 return ANSWER_BOT['not_access']
 
-            ref_messages_psychology = db.reference('/messagesPsychology/')
-            data = ref_messages_psychology.get()
+            ref_messages_psychologist = db.reference('/messagesPsychologist/')
+            data = ref_messages_psychologist.get()
 
             return data
         except Exception as ex:
             print('Ошибка при получении всех сообщений психологу', ex)
 
     @classmethod
-    def getMessagesPsychologyById(cls, message, message_id):
+    def getMessagesPsychologistById(cls, message, message_id):
         """Получить сообщение для психолога по ID сообщения"""
         try:
-            print('MyDB->getMessagesPsychologyById')
+            print('MyDB->getMessagesPsychologistById')
 
             is_psychologist = cls.checkIsPsychologist(message.chat.id)
 
             if not is_psychologist:
                 return ANSWER_BOT['not_access']
 
-            ref_messages_psychology = db.reference(f'/messagesPsychology/{message_id}')
-            data = ref_messages_psychology.get()
+            ref_messages_psychologist = db.reference(f'/messagesPsychologist/{message_id}')
+            data = ref_messages_psychologist.get()
 
             return data
         except Exception as ex:
             print('Ошибка при получении сообщение для психолога по ID сообщения', ex)
 
     @classmethod
-    def getIsNextMessagePsychology(cls, chat_id):
+    def getIsNextMessagePsychologist(cls, chat_id):
         """Проверить является ли передаваемое сообщение для психолога"""
         try:
-            print('MyDB->getIsNextMessagePsychology')
+            print('MyDB->getIsNextMessagePsychologist')
 
             is_psychologist = cls.checkIsPsychologist(chat_id)
 
@@ -214,8 +214,8 @@ class MyDB:
             if is_psychologist:
                 return False
 
-            ref_is_next_message_psychology = db.reference(f'/chats/{chat_id}/is_next_message_psychology')
-            data = ref_is_next_message_psychology.get()
+            ref_is_next_message_psychologist = db.reference(f'/chats/{chat_id}/is_next_message_psychologist')
+            data = ref_is_next_message_psychologist.get()
 
             return data
         except Exception as ex:
@@ -334,12 +334,11 @@ class MyDB:
         except Exception as ex:
             print('Ошибка при записи сообщения в БД', ex)
 
-
     @classmethod
-    def setIsNextMessagePsychology(cls, chat_id, is_value):
+    def setIsNextMessagePsychologist(cls, chat_id, is_value):
         """Установить что следующее сообщение будет направлено психологу"""
         try:
-            print('MyDB->setIsNextMessagePsychology')
+            print('MyDB->setIsNextMessagePsychologist')
 
             is_psychologist = cls.checkIsPsychologist(chat_id)
 
@@ -347,26 +346,53 @@ class MyDB:
             if is_psychologist:
                 return
 
-            ref_is_next_message_psychology = db.reference(f'/chats/{chat_id}/is_next_message_psychology')
-            ref_is_next_message_psychology.set(is_value)
+            ref_is_next_message_psychologist = db.reference(f'/chats/{chat_id}/is_next_message_psychologist')
+            ref_is_next_message_psychologist.set(is_value)
         except Exception as ex:
             print('Ошибка установки переменной дял определения следующего сообщения психологу', ex)
 
     @classmethod
-    def deleteMessagePsychologyById(cls, message_id):
+    def setPsychologistResponsible(cls, chat_id, message_id):
+        """Взять в работу сообщение"""
+        try:
+            print('MyDB->setPsychologistResponsible')
+
+            is_psychologist = cls.checkIsPsychologist(chat_id)
+
+            # Только психолог может брать в работу сообщение
+            if not is_psychologist:
+                return
+
+            messages_psychologist = db.reference(f'/messagesPsychologist/{message_id}/id_psychologist_responsible')
+            data = messages_psychologist.get()
+
+            if data:
+                if data == chat_id:
+                    raise ValueError('Вы уже взяли это сообщение в работу')
+                raise ValueError('Это сообщение уже взял другой психолог')
+
+            messages_psychologist.set(chat_id)
+
+            return {'answer': ANSWER_BOT['psychologist_responsible']}
+        except Exception as ex:
+            print('Ошибка назначении психолога ответственным за ответ пользователю', ex)
+            return {'error': ex}
+
+    @classmethod
+    def deleteMessagePsychologistById(cls, message_id):
         """Удалить сообщение для психолога по id сообщения"""
         try:
-            print('MyDB->deleteMessagePsychologyById')
+            print('MyDB->deleteMessagePsychologistById')
 
-            ref_messages_psychology = db.reference(f'/messagesPsychology/{message_id}')
-            data = ref_messages_psychology.get()
+            ref_messages_psychologist = db.reference(f'/messagesPsychologist/{message_id}')
+            data = ref_messages_psychologist.get()
 
             if not data:
                 raise ValueError(ANSWER_BOT['error_find_user_message_by_id'])
 
-            ref_messages_psychology.delete()
+            ref_messages_psychologist.delete()
 
-            return {'answer': ANSWER_BOT['successfully_message_psychology_delete']}
+            return {'answer': ANSWER_BOT['successfully_message_psychologist_delete']}
         except ValueError as ex:
             print('Ошибка при удалении сообщения из БД', ex)
             return {'error': ex}

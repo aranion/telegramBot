@@ -3,14 +3,11 @@ import re
 from src.actions.const import buttons_available_action_user, ALL_BUTTONS
 from src.actions.enums import ListActions
 from src.answer.answer import ANSWER_BOT
-from src.utils.utils import generateReplyMarkup
+from src.utils.utils import generateReplyMarkup, getValueEnum
 
 
 def actionsInit(bot, my_db, sendResult):
     """Регистрация действий при нажатии кнопок"""
-
-    def _value(enum_item):
-        return ''.join(enum_item.value)
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_inline(call):
@@ -20,25 +17,25 @@ def actionsInit(bot, my_db, sendResult):
                 type_action = call.data
                 chat_id = call.message.chat.id
 
-                if type_action == _value(ListActions.SEND_MESSAGE_PSYCHOLOGISTS):
+                if type_action == getValueEnum('SEND_MESSAGE_PSYCHOLOGISTS'):
                     # Действие "Написать психологу"
                     reply_markup = generateReplyMarkup([ALL_BUTTONS['CANCEL_SEND_MESSAGE_PSYCHOLOGISTS']])
 
-                    my_db.setIsNextMessagePsychology(chat_id, True)
+                    my_db.setIsNextMessagePsychologist(chat_id, True)
 
-                    return bot.send_message(chat_id, ANSWER_BOT['next_message_psychology'], reply_markup=reply_markup)
-                elif type_action == _value(ListActions.CANCEL_SEND_MESSAGE_PSYCHOLOGISTS):
+                    return bot.send_message(chat_id, ANSWER_BOT['next_message_psychologist'], reply_markup=reply_markup)
+                elif type_action == getValueEnum('CANCEL_SEND_MESSAGE_PSYCHOLOGISTS'):
                     # Действие "Отменить "Написать психологу""
                     reply_markup = generateReplyMarkup(buttons_available_action_user)
-                    is_next_message_psychology = my_db.getIsNextMessagePsychology(chat_id)
+                    is_next_message_psychologist = my_db.getIsNextMessagePsychologist(chat_id)
 
-                    if is_next_message_psychology:
-                        my_db.setIsNextMessagePsychology(chat_id, False)
-                        answer = ANSWER_BOT['next_message_psychology_end']
+                    if is_next_message_psychologist:
+                        my_db.setIsNextMessagePsychologist(chat_id, False)
+                        answer = ANSWER_BOT['next_message_psychologist_end']
 
                         return bot.send_message(chat_id, answer, reply_markup=reply_markup)
                     return
-                elif type_action == _value(ListActions.GET_ALL_MESSAGES_FOR_PSYCHOLOGISTS):
+                elif type_action == getValueEnum('GET_ALL_MESSAGES_FOR_PSYCHOLOGISTS'):
                     # Кнопка "Получить все сообщения для психолога"
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
                     answer = 'Сообщения:\n'
@@ -46,40 +43,40 @@ def actionsInit(bot, my_db, sendResult):
                     if not is_psychologist:
                         return bot.send_message(chat_id, ANSWER_BOT['not_access'])
 
-                    messages_psychology = my_db.getMessagesPsychology(chat_id)
+                    messages_psychologist = my_db.getMessagesPsychologist(chat_id)
 
-                    if messages_psychology:
-                        for key in messages_psychology:
-                            answer += f'ID: <code>{key}</code>, Сообщение: \"{messages_psychology[key]["text"]}\"\n'
+                    if messages_psychologist:
+                        for key in messages_psychologist:
+                            answer += f'ID: <code>{key}</code>, Сообщение: \"{messages_psychologist[key]["text"]}\"\n'
 
                         answer += f'\n{ANSWER_BOT["send_answer_for_user"]}'
                         return bot.send_message(chat_id, answer, parse_mode='html')
                     else:
                         return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
-                elif type_action == _value(ListActions.GET_TEN_MESSAGES_FOR_PSYCHOLOGISTS):
+                elif type_action == getValueEnum('GET_TEN_MESSAGES_FOR_PSYCHOLOGISTS'):
                     # Кнопка "Получить последних 10 вопросов"
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
 
                     if not is_psychologist:
                         return bot.send_message(chat_id, ANSWER_BOT['not_access'])
 
-                    messages_psychology = my_db.getMessagesPsychology(chat_id)
+                    messages_psychologist = my_db.getMessagesPsychologist(chat_id)
 
-                    if messages_psychology:
+                    if messages_psychologist:
                         index = 1
 
-                        for key in messages_psychology:
+                        for key in messages_psychologist:
                             # Показать только первые 10 сообщений
                             if index > 10:
                                 return bot.send_message(chat_id, ANSWER_BOT['show_first_10_message'])
-                            answer = f'ID: <code>{key}</code>, Сообщение: \"{messages_psychology[key]["text"]}\"'
+                            answer = f'ID: <code>{key}</code>, Сообщение: \"{messages_psychologist[key]["text"]}\"'
                             bot.send_message(chat_id, answer, parse_mode='html')
 
                             ++index
                         return bot.send_message(chat_id, ANSWER_BOT['send_answer_for_user'])
                     else:
                         return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
-                elif type_action == _value(ListActions.GET_ALL_PSYCHOLOGISTS):
+                elif type_action == getValueEnum('GET_ALL_PSYCHOLOGISTS'):
                     # Кнопка "Получить всех психологов"
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
 
@@ -95,7 +92,7 @@ def actionsInit(bot, my_db, sendResult):
 
                         answer += f'ID: <code>{id_psychologist}</code>, Имя: \"{first_name_psychologist}\"\n'
                     return bot.send_message(chat_id, answer, parse_mode='html')
-                elif type_action == _value(ListActions.ADD_NEW_CATEGORY):
+                elif type_action == getValueEnum('ADD_NEW_CATEGORY'):
                     # Кнопка "Добавить новую подкатегорию"
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
 
@@ -105,10 +102,10 @@ def actionsInit(bot, my_db, sendResult):
                     # sendResult(my_db.addCategory(chat_id, message.text), chat_id)
 
                     return bot.send_message(chat_id, 'Пока не умею 🫤')
-                elif type_action == _value(ListActions.QUIT):
+                elif type_action == getValueEnum('QUIT'):
                     # Кнопка "Выход из чата"
                     return bot.send_message(chat_id, 'Пока не могу 😓')
-                elif type_action == _value(ListActions.GET_ARCHIVE_MESSAGE_PSYCHOLOGIST):
+                elif type_action == getValueEnum('GET_ARCHIVE_MESSAGE_PSYCHOLOGIST'):
                     # Кнопка "Получить все архивные сообщения"
                     message_archive = my_db.getMessagesInArchive(chat_id)
 
@@ -119,7 +116,16 @@ def actionsInit(bot, my_db, sendResult):
                             answer = f'<b>Вопрос:</b>\n\"{message_archive[key].get("text")}\"\n<b>Ответ:</b>\n\"<code>{message_archive[key].get("answer")}</code>\"'
                             bot.send_message(chat_id, answer, parse_mode='html')
                     return
-                elif re.search(f'^{_value(ListActions.DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS)}(_ID_\d+)?$', type_action):
+                elif re.search(f'^{getValueEnum("PSYCHOLOGIST_RESPONSIBLE")}(_ID_\d+)?$', type_action):
+                    # Кнопка "Взять в работу"
+                    re_message_id = re.search('_ID_\d+', type_action)
+
+                    if re_message_id:
+                        list_str = re_message_id.group().split('_')
+                        message_id = list_str[-1:][0]
+                        sendResult(my_db.setPsychologistResponsible(chat_id, message_id), chat_id)
+                    return
+                elif re.search(f'^{getValueEnum("DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS")}(_ID_\d+)?$', type_action):
                     # Кнопка "Удалить вопрос по ID"
                     id_message_delete_re = re.search('_ID_\d+', type_action)
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
@@ -131,9 +137,9 @@ def actionsInit(bot, my_db, sendResult):
                         list_str = id_message_delete_re.group().split('_')
                         message_id = int(list_str[-1:][0])
 
-                        return sendResult(my_db.deleteMessagePsychologyById(message_id), chat_id)
+                        return sendResult(my_db.deleteMessagePsychologistById(message_id), chat_id)
                     return bot.send_message(chat_id, ANSWER_BOT['how_delete_message_by_id'])
-                elif re.search(f'^{_value(ListActions.ANSWER_QUESTION_FROM_CATEGORY)}(_ID_\d+)?$', type_action):
+                elif re.search(f'^{getValueEnum("ANSWER_QUESTION_FROM_CATEGORY")}(_ID_\d+)?$', type_action):
                     id_re = re.search('_ID_\d+', type_action)
 
                     if id_re:
@@ -145,7 +151,7 @@ def actionsInit(bot, my_db, sendResult):
                         reply_markup = generateReplyMarkup([ALL_BUTTONS['SEARCH_OTHER_CATEGORIES']])
                         return bot.send_message(chat_id, answer, parse_mode='html', reply_markup=reply_markup)
                     return
-                elif re.search(f'^{_value(ListActions.SEARCH_CATEGORY)}(_NEXT_(\d+))?$', type_action):
+                elif re.search(f'^{getValueEnum("SEARCH_CATEGORY")}(_NEXT_(\d+))?$', type_action):
                     next_re = re.search('_NEXT_(\d+)', type_action)
                     list_buttons = []
                     answer = ANSWER_BOT['select_category']
@@ -165,7 +171,7 @@ def actionsInit(bot, my_db, sendResult):
                     # Подготовить кнопки категорий
                     for category in categories:
                         text = category.get('name')
-                        action = f'{_value(ListActions.SEARCH_CATEGORY)}_NEXT_{category.get("id")}'
+                        action = f'{getValueEnum("SEARCH_CATEGORY")}_NEXT_{category.get("id")}'
                         list_buttons.append({'text': text, 'action': action})
 
                     # Если категорий нет, значит нужно показывать вопросы
@@ -178,7 +184,7 @@ def actionsInit(bot, my_db, sendResult):
                             list_buttons = buttons_available_action_user
                         for item in questions:
                             question = item.get('text')
-                            action = f'{_value(ListActions.ANSWER_QUESTION_FROM_CATEGORY)}_ID_{item.get("id")}'
+                            action = f'{getValueEnum("ANSWER_QUESTION_FROM_CATEGORY")}_ID_{item.get("id")}'
                             list_buttons.append({'text': question, 'action': action})
                     else:
                         # Добавить кнопку "Назад"
@@ -186,7 +192,7 @@ def actionsInit(bot, my_db, sendResult):
                             parent_category = my_db.getCategoryById(current_category_id)
                             parent_category_id = parent_category.get('parent_id')
                             text = "<-- Назад"
-                            action = _value(ListActions.SEARCH_CATEGORY)
+                            action = getValueEnum("SEARCH_CATEGORY")
 
                             if parent_category_id:
                                 action += f'_NEXT_{parent_category_id}'

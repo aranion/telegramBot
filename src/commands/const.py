@@ -1,15 +1,16 @@
 from src.commands.enums import ListCommands, ListPrivateCommands
+from src.utils.utils import getValueEnum
 
 COMMANDS = [
-    {'command': ListCommands.START.value, 'description': 'Запуск бота'},
-    {'command': ListCommands.INFO.value, 'description': 'Информация о боте'},
-    {'command': ListCommands.HELP.value, 'description': 'Помощь в работе с ботом'},
-    {'command': ListCommands.QUIT.value, 'description': 'Выйти из чата'},
+    {'command': getValueEnum('START', ListCommands), 'description': 'Запуск бота'},
+    {'command': getValueEnum('INFO', ListCommands), 'description': 'Информация о боте'},
+    {'command': getValueEnum('HELP', ListCommands), 'description': 'Помощь в работе с ботом'},
+    {'command': getValueEnum('QUIT', ListCommands), 'description': 'Выйти из чата'},
 ]
 
 PRIVATE_COMMANDS = [
     {
-        'command': ListPrivateCommands.GET_ALL_COMMANDS_PSYCHOLOGISTS.value,
+        'command': getValueEnum('GET_ALL_COMMANDS_PSYCHOLOGISTS', ListPrivateCommands),
         'description': 'Получить все команды психолога'
     },
 ]

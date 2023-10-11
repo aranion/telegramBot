@@ -1,53 +1,53 @@
-from src.actions.enums import ListActions
+from src.utils.utils import getValueEnum
 
 ALL_BUTTONS = {
     'ALL_PSYCHOLOGISTS': {
-        'text': 'Список психологов',
-        'action': ListActions.GET_ALL_PSYCHOLOGISTS.value
+        'text': 'Список психологов 😎',
+        'action': getValueEnum('GET_ALL_PSYCHOLOGISTS')
     },
     'ALL_MESSAGE_PSYCHOLOGISTS': {
-        'text': 'Получить все неотвеченные сообщения',
-        'action': ListActions.GET_ALL_MESSAGES_FOR_PSYCHOLOGISTS.value
+        'text': 'Получить все неотвеченные сообщения ✉️',
+        'action': getValueEnum('GET_ALL_MESSAGES_FOR_PSYCHOLOGISTS')
     },
     'ARCHIVE_MESSAGE_PSYCHOLOGIST': {
-        'text': 'Архивные сообщения',
-        'action': ListActions.GET_ARCHIVE_MESSAGE_PSYCHOLOGIST.value
+        'text': 'Архивные сообщения 📦',
+        'action': getValueEnum('GET_ARCHIVE_MESSAGE_PSYCHOLOGIST')
     },
     'TEN_MESSAGE_PSYCHOLOGISTS': {
-        'text': 'Получить 10 последних сообщения',
-        'action': ListActions.GET_TEN_MESSAGES_FOR_PSYCHOLOGISTS.value
+        'text': 'Получить 10 последних сообщения 📬',
+        'action': getValueEnum('GET_TEN_MESSAGES_FOR_PSYCHOLOGISTS')
     },
     'DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS': {
-        'text': 'Удалить сообщение пользователя',
-        'action': ListActions.DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS.value
+        'text': 'Удалить сообщение пользователя ❌',
+        'action': getValueEnum('DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS')
     },
     'SEARCH_CATEGORY': {
-        'text': 'Самостоятельно найти ответ на вопрос',
-        'action': ListActions.SEARCH_CATEGORY.value
+        'text': 'Самостоятельно поискать ответ на вопрос 🔍',
+        'action': getValueEnum('SEARCH_CATEGORY')
     },
     'NEW_CATEGORY': {
-        'text': 'Добавить новую категорию',
-        'action': ListActions.ADD_NEW_CATEGORY.value
+        'text': 'Добавить новую категорию ➕',
+        'action': getValueEnum('ADD_NEW_CATEGORY')
     },
     'SEND_MESSAGE_PSYCHOLOGISTS': {
-        'text': 'Задать вопрос психологу',
-        'action': ListActions.SEND_MESSAGE_PSYCHOLOGISTS.value
+        'text': 'Задать вопрос психологу 📝',
+        'action': getValueEnum('SEND_MESSAGE_PSYCHOLOGISTS')
     },
     'CANCEL_SEND_MESSAGE_PSYCHOLOGISTS': {
         'text': 'Не сейчас',
-        'action': ListActions.CANCEL_SEND_MESSAGE_PSYCHOLOGISTS.value,
+        'action': getValueEnum('CANCEL_SEND_MESSAGE_PSYCHOLOGISTS'),
     },
     'DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS': {
-        'text': 'Удалить сообщение по ID',
-        'action': ListActions.DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS.value,
+        'text': 'Удалить сообщение по ID ❌',
+        'action': getValueEnum('DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS'),
     },
     'QUIT': {
         'text': 'Выйти',
-        'action': ListActions.QUIT.value
+        'action': getValueEnum('QUIT')
     },
     'SEARCH_OTHER_CATEGORIES': {
-        'text': 'Найти другой вопрос',
-        'action': ListActions.SEARCH_CATEGORY.value
+        'text': '🔍 Найти другой вопрос',
+        'action': getValueEnum('SEARCH_CATEGORY')
     }
 }
 
