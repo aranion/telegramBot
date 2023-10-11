@@ -70,7 +70,7 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     # Получаем всех психологов
                     all_psychologists = my_db.getAllPsychologists()
                     # Формируем сообщение для психолога
-                    new_user_message = f'ID: <code>{message.message_id}</code>\nСообщение: "{message.text}"'
+                    new_user_message = f'{ANSWER_BOT["new_message_received"]}:\nID: <code>{message.message_id}</code>\nСообщение: "{message.text}"'
 
                     # Добавить новое сообщение для психолога в БД
                     my_db.addNewMessagePsychology(message)
@@ -78,7 +78,6 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     # Отправить поступившее сообщение с вопросом в чаты психологов
                     for psychologist in all_psychologists:
                         # TODO Нужно распределить сообщения между всеми психологами, не всем сразу
-                        bot.send_message(psychologist, ANSWER_BOT['new_message_received'], parse_mode='html')
                         bot.send_message(psychologist, new_user_message, parse_mode='html')
 
                     # Уведомить пользователя об успешной отправки сообщения
