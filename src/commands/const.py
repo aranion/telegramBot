@@ -5,7 +5,6 @@ COMMANDS = [
     {'command': getValueEnum('START', ListCommands), 'description': 'Запуск бота'},
     {'command': getValueEnum('INFO', ListCommands), 'description': 'Информация о боте'},
     {'command': getValueEnum('HELP', ListCommands), 'description': 'Помощь в работе с ботом'},
-    {'command': getValueEnum('QUIT', ListCommands), 'description': 'Выйти из чата'},
 ]
 
 PRIVATE_COMMANDS = [

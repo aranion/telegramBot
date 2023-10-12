@@ -1,4 +1,4 @@
-from src.actions.const import buttons_available_action_psychologist, buttons_available_action_user, buttons_quit
+from src.actions.const import buttons_available_action_psychologist, buttons_available_action_user
 from src.answer.answer import ANSWER_BOT
 from src.commands.const import COMMANDS, PRIVATE_COMMANDS
 from src.commands.enums import ListCommands, ListPrivateCommands
@@ -51,20 +51,6 @@ def commandInit(bot, my_db):
                 commands += f"/{''.join(command['command'])} - {command['description']}\n"
 
         bot.send_message(chat_id, 'Команды: ' + commands, parse_mode='html')
-
-    @bot.message_handler(commands=[getValueEnum('QUIT', ListCommands)])
-    def _quit(message):
-        chat_id = message.chat.id
-        is_psychologist = my_db.checkIsPsychologist(chat_id)
-        reply_markup = generateReplyMarkup(buttons_quit)
-        answer = ANSWER_BOT['quit']
-
-        if is_psychologist:
-            answer += ANSWER_BOT['quit_psychologist']
-        else:
-            answer += ANSWER_BOT['quit_user']
-
-        bot.send_message(chat_id, answer, reply_markup=reply_markup)
 
     @bot.message_handler(commands=[getValueEnum('GET_ALL_COMMANDS_PSYCHOLOGISTS', ListPrivateCommands)])
     def _get_all_commands_psychologist(message):

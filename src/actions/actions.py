@@ -1,7 +1,6 @@
 import re
 
 from src.actions.const import buttons_available_action_user, ALL_BUTTONS
-from src.actions.enums import ListActions
 from src.answer.answer import ANSWER_BOT
 from src.utils.utils import generateReplyMarkup, getValueEnum
 
@@ -35,47 +34,71 @@ def actionsInit(bot, my_db, sendResult):
 
                         return bot.send_message(chat_id, answer, reply_markup=reply_markup)
                     return
-                elif type_action == getValueEnum('GET_ALL_MESSAGES_FOR_PSYCHOLOGISTS'):
-                    # Кнопка "Получить все сообщения для психолога"
+                elif type_action == getValueEnum('GET_ALL_UNALLOCATED_MESSAGES_FOR_PSYCHOLOGISTS'):
+                    # Кнопка "Все нераспределенные сообщения"
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
-                    answer = 'Сообщения:\n'
 
                     if not is_psychologist:
                         return bot.send_message(chat_id, ANSWER_BOT['not_access'])
 
                     messages_psychologist = my_db.getMessagesPsychologist(chat_id)
+
+                    bot.send_message(chat_id, ANSWER_BOT['all_unallocated_message'], parse_mode='html')
 
                     if messages_psychologist:
-                        for key in messages_psychologist:
-                            answer += f'ID: <code>{key}</code>, Сообщение: \"{messages_psychologist[key]["text"]}\"\n'
+                        is_not_message = True
 
-                        answer += f'\n{ANSWER_BOT["send_answer_for_user"]}'
-                        return bot.send_message(chat_id, answer, parse_mode='html')
+                        for key in messages_psychologist:
+                            value = messages_psychologist[key]
+
+                            if not value.get('id_psychologist_responsible'):
+                                is_not_message = False
+                                answer = f'✉️ ID: <code>{key}</code>, Сообщение: \"{value.get("text")}\"\n'
+                                buttons_list_data = [{
+                                    'text': 'Взять в работу',
+                                    'action': f'{getValueEnum("PSYCHOLOGIST_RESPONSIBLE")}_ID_{key}'
+                                }]
+                                reply_markup = generateReplyMarkup(buttons_list_data)
+                                bot.send_message(chat_id, answer, parse_mode='html', reply_markup=reply_markup)
+
+                        if is_not_message:
+                            return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
+                        return
                     else:
                         return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
-                elif type_action == getValueEnum('GET_TEN_MESSAGES_FOR_PSYCHOLOGISTS'):
-                    # Кнопка "Получить последних 10 вопросов"
+                elif type_action == getValueEnum('GET_TEN_RESPONSIBLE_MESSAGES_FOR_PSYCHOLOGISTS'):
+                    # Кнопка "Взятые в работу сообщения"
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
 
                     if not is_psychologist:
                         return bot.send_message(chat_id, ANSWER_BOT['not_access'])
 
                     messages_psychologist = my_db.getMessagesPsychologist(chat_id)
+
+                    bot.send_message(chat_id, ANSWER_BOT['responsible_for_message'], parse_mode='html')
 
                     if messages_psychologist:
                         index = 1
+                        is_not_message = True
 
                         for key in messages_psychologist:
-                            # Показать только первые 10 сообщений
-                            if index > 10:
-                                return bot.send_message(chat_id, ANSWER_BOT['show_first_10_message'])
-                            answer = f'ID: <code>{key}</code>, Сообщение: \"{messages_psychologist[key]["text"]}\"'
-                            bot.send_message(chat_id, answer, parse_mode='html')
+                            value = messages_psychologist[key]
 
-                            ++index
+                            if value.get('id_psychologist_responsible') == chat_id:
+                                is_not_message = False
+
+                                # Показать только первые 10 сообщений
+                                if index > 10:
+                                    return bot.send_message(chat_id, ANSWER_BOT['show_first_10_message'])
+                                answer = f'✉️ ID: <code>{key}</code>, Сообщение: \"{value["text"]}\"'
+                                bot.send_message(chat_id, answer, parse_mode='html')
+
+                                ++index
+
+                        if is_not_message:
+                            return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
                         return bot.send_message(chat_id, ANSWER_BOT['send_answer_for_user'])
-                    else:
-                        return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
+                    return bot.send_message(chat_id, ANSWER_BOT['not_messages'])
                 elif type_action == getValueEnum('GET_ALL_PSYCHOLOGISTS'):
                     # Кнопка "Получить всех психологов"
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
@@ -84,7 +107,7 @@ def actionsInit(bot, my_db, sendResult):
                         return bot.send_message(chat_id, ANSWER_BOT['not_access'])
 
                     all_psychologists = my_db.getAllPsychologists()
-                    answer = 'Список психологов:\n'
+                    answer = ANSWER_BOT['list_psychologist']
 
                     for key in all_psychologists:
                         id_psychologist = all_psychologists[key].get("id")
@@ -102,18 +125,18 @@ def actionsInit(bot, my_db, sendResult):
                     # sendResult(my_db.addCategory(chat_id, message.text), chat_id)
 
                     return bot.send_message(chat_id, 'Пока не умею 🫤')
-                elif type_action == getValueEnum('QUIT'):
-                    # Кнопка "Выход из чата"
-                    return bot.send_message(chat_id, 'Пока не могу 😓')
                 elif type_action == getValueEnum('GET_ARCHIVE_MESSAGE_PSYCHOLOGIST'):
                     # Кнопка "Получить все архивные сообщения"
                     message_archive = my_db.getMessagesInArchive(chat_id)
 
+                    bot.send_message(chat_id, ANSWER_BOT['archive_info'], parse_mode='html')
+
                     if not message_archive:
-                        bot.send_message(chat_id, 'Архивных сообщений нет')
+                        bot.send_message(chat_id, ANSWER_BOT['not_messages'])
                     else:
                         for key in message_archive:
-                            answer = f'<b>Вопрос:</b>\n\"{message_archive[key].get("text")}\"\n<b>Ответ:</b>\n\"<code>{message_archive[key].get("answer")}</code>\"'
+                            value = message_archive[key]
+                            answer = f'<b>Вопрос:</b>\n\"{value.get("text")}\"\n<b>Ответ:</b>\n\"<code>{value.get("answer")}</code>\"'
                             bot.send_message(chat_id, answer, parse_mode='html')
                     return
                 elif re.search(f'^{getValueEnum("PSYCHOLOGIST_RESPONSIBLE")}(_ID_\d+)?$', type_action):

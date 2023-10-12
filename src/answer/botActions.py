@@ -1,7 +1,4 @@
-from telebot import types
-
 from src.actions.const import buttons_available_action_psychologist
-from src.actions.enums import ListActions
 from src.answer.answer import ANSWER_BOT
 from src.utils.utils import generateReplyMarkup
 

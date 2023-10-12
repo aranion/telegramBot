@@ -51,10 +51,14 @@ def eventGetUserMessageInit(bot, my_db, catch):
                         # Вопрос удаляется из БД, для предотвращения повторного ответа
                         my_db.deleteMessagePsychologistById(message_id)
                         # Записать ответ в чат психолога, для дальнейшего управления и использования
-                        data = {'text': message_psychologist['text'], 'message_id': message_id,
-                                'answer': answer_psychologist_string}
+                        data = {
+                            'text': message_psychologist['text'],
+                            'message_id': message_id,
+                            'answer': answer_psychologist_string
+                        }
                         my_db.addMessageInArchive(chat_id, data)
                         # TODO Предоставить возможность психологу изменить отправленное сообщение...
+                        # TODO Спрашивать психолога об корректности отправляемого сообщения!
                 except ValueError as ex:
                     bot.reply_to(message, ANSWER_BOT['error_message_id_in_answer_psychologist'])
                     print(ANSWER_BOT['error_message_id_in_answer_psychologist'], ex)

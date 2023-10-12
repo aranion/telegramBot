@@ -5,7 +5,6 @@ class ListCommands(enum.Enum):
     START = 'start',
     INFO = 'info',
     HELP = 'help',
-    QUIT = 'exit',
 
 
 class ListPrivateCommands(enum.Enum):

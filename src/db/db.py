@@ -363,15 +363,22 @@ class MyDB:
             if not is_psychologist:
                 return
 
-            messages_psychologist = db.reference(f'/messagesPsychologist/{message_id}/id_psychologist_responsible')
-            data = messages_psychologist.get()
+            ref_messages_psychologist = db.reference(f'/messagesPsychologist/{message_id}/')
+            data_messages_psychologist = ref_messages_psychologist.get()
 
-            if data:
-                if data == chat_id:
-                    raise ValueError('Вы уже взяли это сообщение в работу')
-                raise ValueError('Это сообщение уже взял другой психолог')
+            if not data_messages_psychologist:
+                raise ValueError(ANSWER_BOT['error_message_not_found'].format(message_id))
 
-            messages_psychologist.set(chat_id)
+            ref_id_psychologist_responsible = db.reference(
+                f'/messagesPsychologist/{message_id}/id_psychologist_responsible')
+            data_id_psychologist_responsible = ref_id_psychologist_responsible.get()
+
+            if data_id_psychologist_responsible:
+                if data_id_psychologist_responsible == chat_id:
+                    raise ValueError(ANSWER_BOT['error_you_get_message_in_work'])
+                raise ValueError(ANSWER_BOT['error_message_get_other_psychologist'])
+
+            ref_id_psychologist_responsible.set(chat_id)
 
             return {'answer': ANSWER_BOT['psychologist_responsible']}
         except Exception as ex:
