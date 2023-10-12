@@ -1,10 +1,10 @@
 # telegramBot
 
-Telegram Bot
+Telegram Bot "Вокс"
 
-Информационная интеллектуальная система психологической поддержки школьников
+Информационная интеллектуальная система психологической поддержки cтудентов
 
-@sk_bot
+@voks_sk_bot
 
 1) Установить venv: `python.exe -m venv venv`
 2) Включаем venv `cd .\venv\Scripts & .\activate & cd ../../`
