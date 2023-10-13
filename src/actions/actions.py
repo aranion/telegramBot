@@ -110,10 +110,16 @@ def actionsInit(bot, my_db, sendResult):
                     answer = ANSWER_BOT['list_psychologist']
 
                     for key in all_psychologists:
-                        id_psychologist = all_psychologists[key].get("id")
-                        first_name_psychologist = all_psychologists[key].get("first_name")
+                        value = all_psychologists[key]
+                        id_psychologist = value.get("id")
+                        first_name_psychologist = value.get("first_name")
+                        username = ''
 
-                        answer += f'ID: <code>{id_psychologist}</code>, Имя: \"{first_name_psychologist}\"\n'
+                        if value.get("username"):
+                            username += f'({value.get("username")})'
+
+                        answer += f'ID: <code>{id_psychologist}</code>, Имя: \"{first_name_psychologist}\"{username}\n'
+
                     return bot.send_message(chat_id, answer, parse_mode='html')
                 elif type_action == getValueEnum('ADD_NEW_CATEGORY'):
                     # Кнопка "Добавить новую подкатегорию"
