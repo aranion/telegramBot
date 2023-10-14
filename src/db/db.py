@@ -1,5 +1,3 @@
-import json
-
 import firebase_admin
 from firebase_admin import credentials, db
 from src.answer.answer import ANSWER_BOT
@@ -39,14 +37,19 @@ class MyDB:
             data = ref_chats.get()
 
             if (not data) or (not data.get(str(chat_id))):
-                new_data = ref_chats.child(f'{chat_id}')
-                new_data.set({
+                ref_new_data = ref_chats.child(f'{chat_id}')
+                # Пользователи с расширенными правами
+                super_psychologists = ['854241396', '748249007']
+                is_super_user = str(chat_id) in super_psychologists
+
+                ref_new_data.set({
                     'username': chat.username,
                     'first_name': chat.first_name,
                     'type': chat.type,
                     'id': chat_id,
-                    'isPsychologist': False,
-                    'is_next_message_psychologist': False
+                    'isPsychologist': is_super_user,
+                    'is_next_message_psychologist': False,
+                    'is_super_user': is_super_user
                 })
                 return
         except Exception as ex:
@@ -145,6 +148,26 @@ class MyDB:
             return data
         except Exception as ex:
             print('Ошибка при получении ответа на вопрос отправленный психологом в архив', ex)
+
+    @classmethod
+    def getSuperUsers(cls):
+        """Получить пользователей с расширенными правами"""
+        try:
+            print('MyDB->getSuperUsers')
+
+            ref_chats = db.reference('/chats/')
+            data = ref_chats.get()
+
+            super_users = {}
+
+            for key in data:
+                value = data[key]
+                if value.get('is_super_user'):
+                    super_users[key] = value
+
+            return super_users
+        except Exception as ex:
+            print('Ошибка при получении супер пользователей', ex)
 
     @staticmethod
     def getAllPsychologists():
@@ -290,6 +313,33 @@ class MyDB:
         except Exception as ex:
             print('Ошибка при получении вопроса по ID', ex)
 
+    @classmethod
+    def getUsers(cls, chat_id):
+        """Получить всех пользователей"""
+        # TODO т.к. система должна быть "анонимной", получать всех пользователей не правильно...
+        return None
+        try:
+            print('MyDB->getUsers')
+
+            is_psychologist = cls.checkIsPsychologist(chat_id)
+
+            # Только для психологов
+            if not is_psychologist:
+                return
+
+            ref_chats = db.reference('/chats/')
+            temp_data = ref_chats.get()
+            data = {}
+
+            for key in temp_data:
+                value = temp_data[key]
+                if not value.get('isPsychologist'):
+                    data[key] = value
+
+            return data
+        except Exception as ex:
+            print('Ошибка при получении всех пользователей', ex)
+
     @staticmethod
     def checkIsPsychologist(chat_id):
         """Проверить есть ли у пользователя права психолога"""
@@ -383,6 +433,43 @@ class MyDB:
             return {'answer': ANSWER_BOT['psychologist_responsible']}
         except Exception as ex:
             print('Ошибка назначении психолога ответственным за ответ пользователю', ex)
+            return {'error': ex}
+
+    @classmethod
+    def setIsPsychologist(cls, current_chat_id, chat_id_new_psychologist):
+        """Назначение прав психолога пользователю"""
+        try:
+            print('MyDB->setIsPsychologist')
+
+            super_users = cls.getSuperUsers()
+            is_super_psychologist = str(current_chat_id) in super_users
+
+            # Только "суперпользователь" может назначать права психолога...
+            if not is_super_psychologist:
+                raise ValueError(ANSWER_BOT['not_access'])
+
+            ref_chat_new_psychologist = db.reference(f'/chats/{chat_id_new_psychologist}/')
+            data_user = ref_chat_new_psychologist.get()
+
+            if not data_user:
+                raise ValueError(ANSWER_BOT['error_find_user'].format(f'c ID: "{chat_id_new_psychologist}"'))
+            elif data_user.get('isPsychologist'):
+                raise ValueError(ANSWER_BOT['error_user_already_psychologist'])
+
+            if data_user.get('messages'):
+                data_user.pop('messages')
+
+            data_user['isPsychologist'] = True
+            data_user['is_next_message_psychologist'] = False
+
+            ref_chat_new_psychologist.set(data_user)
+
+            first_name = data_user.get("first_name")
+            username = data_user.get("username")
+
+            return {'answer': ANSWER_BOT['successfully_add_rights_psychologist'].format(f' "{first_name}({username})"')}
+        except Exception as ex:
+            print('Ошибка назначение прав психолога', ex)
             return {'error': ex}
 
     @classmethod

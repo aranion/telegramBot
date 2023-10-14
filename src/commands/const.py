@@ -12,4 +12,8 @@ PRIVATE_COMMANDS = [
         'command': getValueEnum('GET_ALL_COMMANDS_PSYCHOLOGISTS', ListPrivateCommands),
         'description': 'Получить все команды психолога'
     },
+    {
+        'command': getValueEnum('WANT_BE_PSYCHOLOGISTS', ListPrivateCommands),
+        'description': 'Запросить права психолога (можете поделиться этой командой с человеком который запросит права психолога)'
+    },
 ]

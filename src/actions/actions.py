@@ -56,7 +56,7 @@ def actionsInit(bot, my_db, sendResult):
                                 answer = f'✉️ ID: <code>{key}</code>, Сообщение: \"{value.get("text")}\"\n'
                                 buttons_list_data = [{
                                     'text': 'Взять в работу',
-                                    'action': f'{getValueEnum("PSYCHOLOGIST_RESPONSIBLE")}_ID_{key}'
+                                    'action': f'{getValueEnum("SET_PSYCHOLOGIST_RESPONSIBLE")}_ID_{key}'
                                 }]
                                 reply_markup = generateReplyMarkup(buttons_list_data)
                                 bot.send_message(chat_id, answer, parse_mode='html', reply_markup=reply_markup)
@@ -121,16 +121,30 @@ def actionsInit(bot, my_db, sendResult):
                         answer += f'ID: <code>{id_psychologist}</code>, Имя: \"{first_name_psychologist}\"{username}\n'
 
                     return bot.send_message(chat_id, answer, parse_mode='html')
-                elif type_action == getValueEnum('ADD_NEW_CATEGORY'):
-                    # Кнопка "Добавить новую подкатегорию"
+                elif type_action == getValueEnum('GET_ALL_USERS'):
+                    # Кнопка "Список пользователей"
+                    # TODO т.к. система должна быть "анонимной", получать всех пользователей не правильно...
+                    return None
                     is_psychologist = my_db.checkIsPsychologist(chat_id)
 
                     if not is_psychologist:
                         return bot.send_message(chat_id, ANSWER_BOT['not_access'])
 
-                    # sendResult(my_db.addCategory(chat_id, message.text), chat_id)
+                    all_users = my_db.getUsers(chat_id)
+                    answer = ANSWER_BOT['list_users']
 
-                    return bot.send_message(chat_id, 'Пока не умею 🫤')
+                    for key in all_users:
+                        value = all_users[key]
+                        id_users = value.get("id")
+                        first_name_psychologist = value.get("first_name")
+                        username = ''
+
+                        if value.get("username"):
+                            username += f'({value.get("username")})'
+
+                        answer += f'ID: <code>{id_users}</code>, Имя: \"{first_name_psychologist}\"{username}\n'
+
+                    return bot.send_message(chat_id, answer, parse_mode='html')
                 elif type_action == getValueEnum('GET_ARCHIVE_MESSAGE_PSYCHOLOGIST'):
                     # Кнопка "Получить все архивные сообщения"
                     message_archive = my_db.getMessagesInArchive(chat_id)
@@ -145,7 +159,29 @@ def actionsInit(bot, my_db, sendResult):
                             answer = f'<b>Вопрос:</b>\n\"{value.get("text")}\"\n<b>Ответ:</b>\n\"<code>{value.get("answer")}</code>\"'
                             bot.send_message(chat_id, answer, parse_mode='html')
                     return
-                elif re.search(f'^{getValueEnum("PSYCHOLOGIST_RESPONSIBLE")}(_ID_\d+)?$', type_action):
+                elif re.search(f'^{getValueEnum("GET_ANSWER_QUESTION_FROM_CATEGORY")}(_ID_\d+)?$', type_action):
+                    id_re = re.search('_ID_\d+', type_action)
+
+                    if id_re:
+                        list_str = id_re.group().split('_')
+                        question_id = int(list_str[-1:][0])
+                        question = my_db.getQuestionById(question_id)
+                        question_answer = '\n'.join(question.get("answer").split('\\n'))
+                        answer = f'<b>Вопрос</b>:\n\"{question.get("text")}\"\n\n<b>Ответ</b>:\n\"{question_answer}\"'
+                        reply_markup = generateReplyMarkup([ALL_BUTTONS['SEARCH_OTHER_CATEGORIES']])
+                        return bot.send_message(chat_id, answer, parse_mode='html', reply_markup=reply_markup)
+                    return
+                elif type_action == getValueEnum('ADD_NEW_CATEGORY'):
+                    # Кнопка "Добавить новую подкатегорию"
+                    is_psychologist = my_db.checkIsPsychologist(chat_id)
+
+                    if not is_psychologist:
+                        return bot.send_message(chat_id, ANSWER_BOT['not_access'])
+
+                    # sendResult(my_db.addCategory(chat_id, message.text), chat_id)
+
+                    return bot.send_message(chat_id, ANSWER_BOT['i_dont_know_actions'])
+                elif re.search(f'^{getValueEnum("SET_PSYCHOLOGIST_RESPONSIBLE")}(_ID_\d+)?$', type_action):
                     # Кнопка "Взять в работу"
                     re_message_id = re.search('_ID_\d+', type_action)
 
@@ -154,6 +190,15 @@ def actionsInit(bot, my_db, sendResult):
                         message_id = list_str[-1:][0]
                         sendResult(my_db.setPsychologistResponsible(chat_id, message_id), chat_id)
                     return
+                elif re.search(f'^{getValueEnum("SET_USERS_IS_PSYCHOLOGISTS")}(_ID_(\d+))?$', type_action):
+                    re_id_psychologist = re.search('_ID_(\d+)', type_action)
+
+                    if re_id_psychologist:
+                        list_str = re_id_psychologist.group().split('_')
+                        psychologist_id = list_str[-1:][0]
+
+                        return sendResult(my_db.setIsPsychologist(chat_id, psychologist_id), chat_id)
+                    return bot.send_message(chat_id, 'Введен не корректный ID чата')
                 elif re.search(f'^{getValueEnum("DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS")}(_ID_\d+)?$', type_action):
                     # Кнопка "Удалить вопрос по ID"
                     id_message_delete_re = re.search('_ID_\d+', type_action)
@@ -168,18 +213,6 @@ def actionsInit(bot, my_db, sendResult):
 
                         return sendResult(my_db.deleteMessagePsychologistById(message_id), chat_id)
                     return bot.send_message(chat_id, ANSWER_BOT['how_delete_message_by_id'])
-                elif re.search(f'^{getValueEnum("ANSWER_QUESTION_FROM_CATEGORY")}(_ID_\d+)?$', type_action):
-                    id_re = re.search('_ID_\d+', type_action)
-
-                    if id_re:
-                        list_str = id_re.group().split('_')
-                        question_id = int(list_str[-1:][0])
-                        question = my_db.getQuestionById(question_id)
-                        question_answer = '\n'.join(question.get("answer").split('\\n'))
-                        answer = f'<b>Вопрос</b>:\n\"{question.get("text")}\"\n\n<b>Ответ</b>:\n\"{question_answer}\"'
-                        reply_markup = generateReplyMarkup([ALL_BUTTONS['SEARCH_OTHER_CATEGORIES']])
-                        return bot.send_message(chat_id, answer, parse_mode='html', reply_markup=reply_markup)
-                    return
                 elif re.search(f'^{getValueEnum("SEARCH_CATEGORY")}(_NEXT_(\d+))?$', type_action):
                     next_re = re.search('_NEXT_(\d+)', type_action)
                     list_buttons = []
@@ -213,7 +246,7 @@ def actionsInit(bot, my_db, sendResult):
                             list_buttons = buttons_available_action_user
                         for item in questions:
                             question = item.get('text')
-                            action = f'{getValueEnum("ANSWER_QUESTION_FROM_CATEGORY")}_ID_{item.get("id")}'
+                            action = f'{getValueEnum("GET_ANSWER_QUESTION_FROM_CATEGORY")}_ID_{item.get("id")}'
                             list_buttons.append({'text': question, 'action': action})
                     else:
                         # Добавить кнопку "Назад"
@@ -231,6 +264,8 @@ def actionsInit(bot, my_db, sendResult):
                             number_column = 2
                     reply_markup = generateReplyMarkup(list_buttons, number_column)
                     return bot.send_message(chat_id, answer, reply_markup=reply_markup)
+                else:
+                    bot.send_message(chat_id, ANSWER_BOT['i_dont_know_actions'])
             elif call.inline_message_id:
                 # Если сообщение из инлайн-режима
                 bot.edit_message_text(inline_message_id=call.inline_message_id, text=ANSWER_BOT['actions_i_dont_know'])

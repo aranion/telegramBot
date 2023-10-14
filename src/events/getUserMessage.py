@@ -82,7 +82,7 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     for psychologist in all_psychologists:
                         buttons_list_data = [{
                             'text': 'Взять в работу',
-                            'action': f'{getValueEnum("PSYCHOLOGIST_RESPONSIBLE")}_ID_{message.message_id}'
+                            'action': f'{getValueEnum("SET_PSYCHOLOGIST_RESPONSIBLE")}_ID_{message.message_id}'
                         }]
                         reply_markup = generateReplyMarkup(buttons_list_data)
                         bot.send_message(psychologist, new_user_message, parse_mode='html', reply_markup=reply_markup)

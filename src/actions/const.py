@@ -44,7 +44,12 @@ ALL_BUTTONS = {
     'SEARCH_OTHER_CATEGORIES': {
         'text': '🔍 Найти другой вопрос',
         'action': getValueEnum('SEARCH_CATEGORY')
-    }
+    },
+    # TODO т.к. система должна быть "анонимной", получать всех пользователей не правильно...
+    # 'ALL_USERS': {
+    #     'text': 'Список пользователей 🤓',
+    #     'action': getValueEnum('GET_ALL_USERS')
+    # }
 }
 
 # Доступные действия для психологов:
@@ -53,6 +58,7 @@ buttons_available_action_psychologist = [
     ALL_BUTTONS['TEN_RESPONSIBLE_MESSAGE_FOR_PSYCHOLOGISTS'],
     ALL_BUTTONS['ARCHIVE_MESSAGE_PSYCHOLOGIST'],
     ALL_BUTTONS['ALL_PSYCHOLOGISTS'],
+    # ALL_BUTTONS['ALL_USERS'],
     ALL_BUTTONS['DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS'],
     ALL_BUTTONS['NEW_CATEGORY'],
     ALL_BUTTONS['SEARCH_CATEGORY'],

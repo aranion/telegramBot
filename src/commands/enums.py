@@ -9,3 +9,4 @@ class ListCommands(enum.Enum):
 
 class ListPrivateCommands(enum.Enum):
     GET_ALL_COMMANDS_PSYCHOLOGISTS = 'all_cmd',
+    WANT_BE_PSYCHOLOGISTS = 'want_be_psychologist',
