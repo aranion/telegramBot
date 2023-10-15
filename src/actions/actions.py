@@ -152,7 +152,16 @@ def actionsInit(bot, my_db, sendResult):
                         question = my_db.getQuestionById(question_id)
                         question_answer = '\n'.join(question.get("answer").split('\\n'))
                         answer = f'<b>Вопрос</b>:\n\"{question.get("text")}\"\n\n<b>Ответ</b>:\n\"{question_answer}\"'
-                        reply_markup = generateReplyMarkup([ALL_BUTTONS['SEARCH_OTHER_CATEGORIES']])
+                        list_buttons = [ALL_BUTTONS['SEARCH_OTHER_CATEGORIES']]
+                        parent_category_id = question.get("category")
+
+                        list_buttons.append({
+                            'text': "<-- Назад",
+                            'action': f'{getValueEnum("SEARCH_CATEGORY")}_NEXT_{parent_category_id}'}
+                        )
+
+                        reply_markup = generateReplyMarkup(list_buttons)
+
                         return bot.send_message(chat_id, answer, parse_mode='html', reply_markup=reply_markup)
                     return
                 elif type_action == getValueEnum('ADD_NEW_CATEGORY'):
