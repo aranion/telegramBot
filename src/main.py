@@ -24,14 +24,16 @@ def catch(err, message=None):
 
 
 def sendResult(result_data, chat_id):
-    """Отправить пользователям результат действий"""
+    """Отправить пользователям результат после взаимодействия с БД"""
     error = result_data.get('error')
     answer = result_data.get('answer')
 
     if error:
         bot.send_message(chat_id, error, parse_mode='html')
+        return False
     elif answer:
         bot.send_message(chat_id, answer, parse_mode='html')
+        return True
 
 
 # Регистрация действий на кнопки

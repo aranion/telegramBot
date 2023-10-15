@@ -1,5 +1,4 @@
 from telebot import types
-
 from src.actions.enums import ListActions
 
 
@@ -32,3 +31,12 @@ def getValueEnum(enum_key, enum=ListActions):
     except Exception as ex:
         print(f'Ошибка в получении значения {enum_key} в {enum}', ex)
         return ''
+
+
+def getAnswerUserData(user_data):
+    user_id = user_data.get('id')
+    first_name = user_data.get('first_name')
+    username = user_data.get('username')
+    username = username and f"(@{username})" or ""
+
+    return f'ID: <code>{user_id}</code>, Имя: \"{first_name}{username}\"\n'

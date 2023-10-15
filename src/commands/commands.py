@@ -2,14 +2,13 @@ from src.actions.const import buttons_available_action_psychologist, buttons_ava
 from src.answer.answer import ANSWER_BOT
 from src.commands.const import COMMANDS, PRIVATE_COMMANDS
 from src.commands.enums import ListCommands, ListPrivateCommands
-from src.utils.utils import generateReplyMarkup, getValueEnum
+from src.utils.utils import generateReplyMarkup, getValueEnum, getAnswerUserData
 
 
 def commandInit(bot, my_db):
     @bot.message_handler(commands=[getValueEnum('START', ListCommands)])
     def _start(message):
         chat_id = message.chat.id
-        list_data_buttons = []
         answer = ''
         reply_markup = None
 
@@ -66,26 +65,24 @@ def commandInit(bot, my_db):
 
     @bot.message_handler(commands=[getValueEnum('WANT_BE_PSYCHOLOGISTS', ListPrivateCommands)])
     def _want_be_psychologist(message):
-        chat_id = message.chat.id
-
+        chat = message.chat
+        chat_id = chat.id
+        user_data = {"id": chat_id, "first_name": chat.first_name, "username": chat.username}
         is_psychologist = my_db.checkIsPsychologist(chat_id)
+        action = f'{getValueEnum("SET_USERS_IS_PSYCHOLOGISTS")}_ID_{chat_id}'
 
         if is_psychologist:
             reply_markup = generateReplyMarkup([{
-                'text': '😰 Не хочу больше быть психологом...',
-                'action': '----'
+                'text': '😰 Не хочу больше быть психологом!',
+                'action': f'{action}_BAN'
             }])
             return bot.send_message(chat_id, ANSWER_BOT['you_are_already_psychologist'], reply_markup=reply_markup)
 
-        reply_markup = generateReplyMarkup([{
-            'text': 'Предоставить',
-            'action': f'{getValueEnum("SET_USERS_IS_PSYCHOLOGISTS")}_ID_{chat_id}'
-        }])
-        first_name = message.chat.first_name
-        username = message.chat.username
-        answer = ANSWER_BOT['alert_new_psychologist'].format(f'\nID:"{chat_id}", Имя:"{first_name}({username})"')
+        reply_markup = generateReplyMarkup([{'text': 'Предоставить', 'action': action}])
+        answer = ANSWER_BOT['alert_new_psychologist'].format(f'\n{getAnswerUserData(user_data)}')
         super_users = my_db.getSuperUsers()
 
+        # Уведомить "суперпользователей" о запросе прав психолога
         for chat_id_super_user in super_users:
             bot.send_message(chat_id_super_user, answer, parse_mode='html', reply_markup=reply_markup)
 

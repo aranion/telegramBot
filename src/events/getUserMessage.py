@@ -39,8 +39,9 @@ def eventGetUserMessageInit(bot, my_db, catch):
                             },
                         ]
                         reply_markup = generateReplyMarkup(list_data_buttons)
-                        answer = f'Вы хотите удалить?:\n\nID: {message_id}, Сообщение: \"{message_psychologist["text"]}\"'
-                        bot.send_message(chat_id=chat_id, text=answer, reply_markup=reply_markup)
+                        answer = f'Вы хотите удалить?:\n\n' \
+                                 f'{ANSWER_BOT["item_message"].format(message_id, message_psychologist.get("text"))}'
+                        bot.send_message(chat_id, answer, parse_mode='html', reply_markup=reply_markup)
                     else:
                         answer_psychologist_string = ' '.join(list_str)
                         answer = f"""{ANSWER_BOT['send_question']}\n\n<b>Вопрос</b>:\n\"{message_psychologist['text']}\"\n<b>Ответ</b>:\n\"{answer_psychologist_string}\""""
@@ -73,7 +74,8 @@ def eventGetUserMessageInit(bot, my_db, catch):
                     # Получаем всех психологов
                     all_psychologists = my_db.getAllPsychologists()
                     # Формируем сообщение для психолога
-                    new_user_message = f'{ANSWER_BOT["new_message_received"]}:\nID: <code>{message.message_id}</code>\nСообщение: "{message.text}"'
+                    new_user_message = f'{ANSWER_BOT["new_message_received"]}:\n' \
+                                       f'{ANSWER_BOT["item_message"].format(message.message_id, message.text)}'
 
                     # Добавить новое сообщение для психолога в БД
                     my_db.addNewMessagePsychologist(message)

@@ -1,8 +1,8 @@
 import re
 
-from src.actions.const import buttons_available_action_user, ALL_BUTTONS
+from src.actions.const import buttons_available_action_user, ALL_BUTTONS, buttons_available_action_psychologist
 from src.answer.answer import ANSWER_BOT
-from src.utils.utils import generateReplyMarkup, getValueEnum
+from src.utils.utils import generateReplyMarkup, getValueEnum, getAnswerUserData
 
 
 def actionsInit(bot, my_db, sendResult):
@@ -53,7 +53,7 @@ def actionsInit(bot, my_db, sendResult):
 
                             if not value.get('id_psychologist_responsible'):
                                 is_not_message = False
-                                answer = f'✉️ ID: <code>{key}</code>, Сообщение: \"{value.get("text")}\"\n'
+                                answer = ANSWER_BOT['item_message'].format(key, value.get("text")) + '\n'
                                 buttons_list_data = [{
                                     'text': 'Взять в работу',
                                     'action': f'{getValueEnum("SET_PSYCHOLOGIST_RESPONSIBLE")}_ID_{key}'
@@ -90,7 +90,7 @@ def actionsInit(bot, my_db, sendResult):
                                 # Показать только первые 10 сообщений
                                 if index > 10:
                                     return bot.send_message(chat_id, ANSWER_BOT['show_first_10_message'])
-                                answer = f'✉️ ID: <code>{key}</code>, Сообщение: \"{value["text"]}\"'
+                                answer = ANSWER_BOT['item_message'].format(key, value["text"])
                                 bot.send_message(chat_id, answer, parse_mode='html')
 
                                 ++index
@@ -110,18 +110,10 @@ def actionsInit(bot, my_db, sendResult):
                     answer = ANSWER_BOT['list_psychologist']
 
                     for key in all_psychologists:
-                        value = all_psychologists[key]
-                        id_psychologist = value.get("id")
-                        first_name_psychologist = value.get("first_name")
-                        username = ''
-
-                        if value.get("username"):
-                            username += f'({value.get("username")})'
-
-                        answer += f'ID: <code>{id_psychologist}</code>, Имя: \"{first_name_psychologist}\"{username}\n'
+                        answer += getAnswerUserData(all_psychologists[key])
 
                     return bot.send_message(chat_id, answer, parse_mode='html')
-                elif type_action == getValueEnum('GET_ALL_USERS'):
+                elif False and (type_action == getValueEnum('GET_ALL_USERS')):
                     # Кнопка "Список пользователей"
                     # TODO т.к. система должна быть "анонимной", получать всех пользователей не правильно...
                     return None
@@ -134,15 +126,7 @@ def actionsInit(bot, my_db, sendResult):
                     answer = ANSWER_BOT['list_users']
 
                     for key in all_users:
-                        value = all_users[key]
-                        id_users = value.get("id")
-                        first_name_psychologist = value.get("first_name")
-                        username = ''
-
-                        if value.get("username"):
-                            username += f'({value.get("username")})'
-
-                        answer += f'ID: <code>{id_users}</code>, Имя: \"{first_name_psychologist}\"{username}\n'
+                        answer += getAnswerUserData(all_users[key])
 
                     return bot.send_message(chat_id, answer, parse_mode='html')
                 elif type_action == getValueEnum('GET_ARCHIVE_MESSAGE_PSYCHOLOGIST'):
@@ -190,15 +174,23 @@ def actionsInit(bot, my_db, sendResult):
                         message_id = list_str[-1:][0]
                         sendResult(my_db.setPsychologistResponsible(chat_id, message_id), chat_id)
                     return
-                elif re.search(f'^{getValueEnum("SET_USERS_IS_PSYCHOLOGISTS")}(_ID_(\d+))?$', type_action):
-                    re_id_psychologist = re.search('_ID_(\d+)', type_action)
+                elif re.search(f'^{getValueEnum("SET_USERS_IS_PSYCHOLOGISTS")}((_ID_(\d+))(_BAN)?)?$', type_action):
+                    re_new_psychologist_id = re.search('_ID_(\d+)', type_action)
+                    is_ban = re.search('_BAN', type_action) and True or False
 
-                    if re_id_psychologist:
-                        list_str = re_id_psychologist.group().split('_')
-                        psychologist_id = list_str[-1:][0]
+                    if re_new_psychologist_id:
+                        list_str = re_new_psychologist_id.group().split('_')
+                        new_psychologist_id = list_str[-1:][0]
+                        is_ok = sendResult(my_db.setIsPsychologist(chat_id, new_psychologist_id, is_ban), chat_id)
 
-                        return sendResult(my_db.setIsPsychologist(chat_id, psychologist_id), chat_id)
-                    return bot.send_message(chat_id, 'Введен не корректный ID чата')
+                        if is_ok and not is_ban:
+                            reply_markup = generateReplyMarkup(buttons_available_action_psychologist)
+                            answer = ANSWER_BOT['psychological_rights_have_been_added_to_you']
+
+                            bot.send_message(new_psychologist_id, answer, reply_markup=reply_markup)
+                        return
+                    else:
+                        return bot.send_message(chat_id, ANSWER_BOT['error_not_correct_chat_id'])
                 elif re.search(f'^{getValueEnum("DELETE_USER_MESSAGE_FOR_PSYCHOLOGISTS")}(_ID_\d+)?$', type_action):
                     # Кнопка "Удалить вопрос по ID"
                     id_message_delete_re = re.search('_ID_\d+', type_action)

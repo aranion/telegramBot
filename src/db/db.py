@@ -436,13 +436,42 @@ class MyDB:
             return {'error': ex}
 
     @classmethod
-    def setIsPsychologist(cls, current_chat_id, chat_id_new_psychologist):
-        """Назначение прав психолога пользователю"""
+    def setIsPsychologist(cls, current_chat_id, chat_id_new_psychologist, is_ban=False):
+        """Назначение или лишение прав психолога"""
         try:
             print('MyDB->setIsPsychologist')
 
             super_users = cls.getSuperUsers()
             is_super_psychologist = str(current_chat_id) in super_users
+
+            # Если пользователь сам себе убирает права психолога
+            if (str(current_chat_id) == str(chat_id_new_psychologist)) and is_ban:
+                ref_chat = db.reference(f'/chats/{current_chat_id}/')
+                data_chat = ref_chat.get()
+                is_psychologist = data_chat.get('isPsychologist')
+                is_super_user = data_chat.get('is_super_user')
+
+                # Если у текущего пользователя нет прав психолога, то и лишать его нечего
+                if not is_psychologist:
+                    raise ValueError(ANSWER_BOT['not_access'])
+
+                # Супер пользователь не может лишиться прав психолога
+                if is_super_user:
+                    raise ValueError(ANSWER_BOT['error_not_ban_psychologist'])
+
+                data_messages_psychologist = cls.getMessagesPsychologist(current_chat_id)
+
+                # Сбросить все закрепленные сообщения за психологом
+                for key in data_messages_psychologist:
+                    value = data_messages_psychologist[key]
+                    if value.get('id_psychologist_responsible') == current_chat_id:
+                        ref_id_psychologist_responsible = db.reference(
+                            f'/messagesPsychologist/{key}/id_psychologist_responsible/')
+                        ref_id_psychologist_responsible.delete()
+
+                db.reference(f'/chats/{current_chat_id}/isPsychologist/').set(False)
+
+                return {'answer': ANSWER_BOT['successfully_ban_psychologist']}
 
             # Только "суперпользователь" может назначать права психолога...
             if not is_super_psychologist:
@@ -456,6 +485,7 @@ class MyDB:
             elif data_user.get('isPsychologist'):
                 raise ValueError(ANSWER_BOT['error_user_already_psychologist'])
 
+            # Данное поле нужно только пользователям, у психологов есть архив
             if data_user.get('messages'):
                 data_user.pop('messages')
 
@@ -466,6 +496,7 @@ class MyDB:
 
             first_name = data_user.get("first_name")
             username = data_user.get("username")
+            username = username and f'@{username}' or ''
 
             return {'answer': ANSWER_BOT['successfully_add_rights_psychologist'].format(f' "{first_name}({username})"')}
         except Exception as ex:

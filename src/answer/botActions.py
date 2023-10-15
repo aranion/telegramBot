@@ -28,7 +28,7 @@ class BotActions:
                                   reply_markup=reply_markup)
 
     def notificationUsers(self):
-        """Рассылка всем пользователя уведомлений"""
+        """Рассылка всем пользователям уведомлений, новости, посты"""
         # TODO на потом...
         dict_all_users = {}
 
