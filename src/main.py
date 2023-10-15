@@ -4,7 +4,7 @@ from src.answer.botActions import BotActions
 from src.answer.answer import ANSWER_BOT
 from src.db.db import MyDB
 from src.commands.commands import commandInit
-from src.config import config
+from config.config import config
 from src.events.getUserMessage import eventGetUserMessageInit
 
 bot = telebot.TeleBot(token=config['botToken'])
