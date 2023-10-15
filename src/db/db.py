@@ -4,6 +4,7 @@ import firebase_admin
 from firebase_admin import credentials, db
 from src.answer.answer import ANSWER_BOT
 
+from datetime import datetime
 
 class MyDB:
     """Управление БД"""
@@ -225,7 +226,7 @@ class MyDB:
     def getCategories(cls, parent_id=None):
         """Получить все категории"""
         try:
-            print('MyDB->getCategories')
+            print(f'{datetime.now()}MyDB->getCategories')
 
             ref_categories = db.reference('/categories/')
             temp_data = ref_categories.get()
