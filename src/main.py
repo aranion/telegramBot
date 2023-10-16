@@ -34,13 +34,22 @@ def sendResult(result_data, chat_id):
         bot.send_message(chat_id, answer, parse_mode='html')
 
 
-# Регистрация действий на кнопки
-actionsInit(bot, my_db, sendResult)
-# Регистрация команд бота
-commandInit(bot, my_db)
-# Оповещение психологов о подключении бота
-botActions.welcomePsychologists()
-# Регистрация обработчика всех сообщений от пользователя
-eventGetUserMessageInit(bot, my_db, catch)
+try:
+    # Регистрация действий на кнопки
+    actionsInit(bot, my_db, sendResult)
+    # Регистрация команд бота
+    commandInit(bot, my_db)
+    # Оповещение психологов о подключении бота
+    botActions.welcomePsychologists()
+    # Регистрация обработчика всех сообщений от пользователя
+    eventGetUserMessageInit(bot, my_db, catch)
+except Exception as ex:
+    print('Ошибка при старте проекта', ex)
 
-bot.polling(none_stop=True)
+try:
+    telebot.apihelper.RETRY_ON_ERROR = True
+    bot.infinity_polling(timeout=10, long_polling_timeout=5)
+    # bot.polling(none_stop=True)
+except Exception as ex:
+    print('Ошибка при infinity polling', ex)
+
